@@ -21,7 +21,7 @@ const primaryMenuItems = [
   {
     title: "Dashboard",
     icon: LayoutDashboard,
-    url: "/manager/filtros",
+    url: "/manager",
   },
   {
     title: "Vendedores",
