@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Users, TrendingUp, Timer, Filter } from "lucide-react"
+import { Users, TrendingUp, Timer, Filter, UserPlus } from "lucide-react"
 import { VendedorList } from "@/components/VendedorList"
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip } from "recharts"
 import { ChartContainer } from "@/components/ui/chart"
@@ -81,16 +81,16 @@ const ManagerDashboard = () => {
           </CardContent>
         </Card>
 
-        <Card className="bg-white hover:shadow-lg transition-shadow">
-          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Taxa de Conversão</CardTitle>
-            <UserPlus className="h-4 w-4 text-[#1EAEDB]" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">68%</div>
-            <p className="text-xs text-[#1EAEDB] mt-1">+5% desde ontem</p>
-          </CardContent>
-        </Card>
+              <Card className="bg-white hover:shadow-lg transition-shadow">
+                <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+                  <CardTitle className="text-sm font-medium text-muted-foreground">Taxa de Conversão</CardTitle>
+                  <UserPlus className="h-4 w-4 text-[#1EAEDB]" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">68%</div>
+                  <p className="text-xs text-[#1EAEDB] mt-1">+5% desde ontem</p>
+                </CardContent>
+              </Card>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
