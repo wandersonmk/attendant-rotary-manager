@@ -9,6 +9,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
+import { toast } from "@/hooks/use-toast";
 
 interface VendaDialogProps {
   showDialog: boolean;
@@ -29,6 +30,18 @@ export const VendaDialog = ({
   onSemVenda,
   formatCurrency,
 }: VendaDialogProps) => {
+  const handleConfirmarVenda = () => {
+    if (Number(valorVenda) <= 0) {
+      toast({
+        title: "Valor inválido",
+        description: "Não é possível confirmar uma venda com valor zerado",
+        variant: "destructive",
+      });
+      return;
+    }
+    onConfirmarVenda();
+  };
+
   return (
     <AlertDialog open={showDialog} onOpenChange={onOpenChange}>
       <AlertDialogContent>
@@ -50,7 +63,7 @@ export const VendaDialog = ({
           <AlertDialogCancel onClick={onSemVenda}>
             Não houve venda
           </AlertDialogCancel>
-          <AlertDialogAction onClick={onConfirmarVenda}>
+          <AlertDialogAction onClick={handleConfirmarVenda}>
             Confirmar Venda
           </AlertDialogAction>
         </AlertDialogFooter>
