@@ -127,7 +127,7 @@ const Relatorios = () => {
                       <ChevronDown className="h-4 w-4" />
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent>
+                  <DropdownMenuContent className="bg-white dark:bg-gray-800 border shadow-lg">
                     <DropdownMenuItem onClick={() => setSelectedVendedor("Todos")}>
                       Todos
                     </DropdownMenuItem>
