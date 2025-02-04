@@ -215,6 +215,17 @@ const AtendimentoRotativo = () => {
     return a.posicao - b.posicao;
   });
 
+  const getQueuePosition = (vendedor: Vendedor) => {
+    if (vendedor.status !== "aguardando") return "";
+    
+    const vendedoresAguardando = vendedores.filter(v => v.status === "aguardando");
+    const posicaoNaFila = vendedoresAguardando
+      .sort((a, b) => a.posicao - b.posicao)
+      .findIndex(v => v.id === vendedor.id);
+    
+    return posicaoNaFila >= 0 ? `${posicaoNaFila + 1}º da fila` : "";
+  };
+
   const formatCurrency = (value: string) => {
     // Remove todos os caracteres não numéricos
     const numericValue = value.replace(/\D/g, "");
@@ -310,7 +321,7 @@ const AtendimentoRotativo = () => {
                         ? "Expediente encerrado"
                         : vendedor.status === "nao_iniciado"
                         ? "Não iniciado"
-                        : `${vendedor.posicao}º da fila`}
+                        : getQueuePosition(vendedor)}
                     </p>
                   </div>
                 </div>
