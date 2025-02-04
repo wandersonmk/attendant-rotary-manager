@@ -77,6 +77,7 @@ export function DashboardSidebar() {
                     tooltip={item.title}
                     asChild
                     isActive={item.url === "/manager"}
+                    className="w-full rounded-md transition-colors hover:bg-[#E5DEFF] hover:text-[#7E69AB] px-3 py-2"
                   >
                     <a href={item.url}>
                       <item.icon />
@@ -97,7 +98,11 @@ export function DashboardSidebar() {
             <SidebarMenu>
               {secondaryMenuItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton tooltip={item.title} asChild>
+                  <SidebarMenuButton 
+                    tooltip={item.title} 
+                    asChild
+                    className="w-full rounded-md transition-colors hover:bg-[#F2FCE2] hover:text-[#10b981] px-3 py-2"
+                  >
                     <a href={item.url}>
                       <item.icon />
                       <span>{item.title}</span>
@@ -122,7 +127,7 @@ export function DashboardSidebar() {
           <SidebarMenuItem>
             <SidebarMenuButton
               tooltip="Sair"
-              className="text-red-600 hover:text-red-700 hover:bg-red-50"
+              className="w-full rounded-md transition-colors text-red-600 hover:text-red-700 hover:bg-red-50 px-3 py-2"
             >
               <LogOut />
               <span>Sair</span>
