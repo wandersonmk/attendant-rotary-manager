@@ -22,6 +22,7 @@ export const VendedorList = () => {
   ]);
 
   const [novoVendedor, setNovoVendedor] = useState("");
+  const [filtro, setFiltro] = useState("");
   const { toast } = useToast();
 
   const adicionarVendedor = () => {
@@ -58,6 +59,10 @@ export const VendedorList = () => {
     });
   };
 
+  const vendedoresFiltrados = vendedores.filter(vendedor =>
+    vendedor.nome.toLowerCase().includes(filtro.toLowerCase())
+  );
+
   return (
     <div className="space-y-4">
       <div className="flex gap-4">
@@ -73,7 +78,14 @@ export const VendedorList = () => {
         </Button>
       </div>
 
-      {vendedores.map((vendedor) => (
+      <Input
+        placeholder="Filtrar vendedores..."
+        value={filtro}
+        onChange={(e) => setFiltro(e.target.value)}
+        className="mb-4"
+      />
+
+      {vendedoresFiltrados.map((vendedor) => (
         <div
           key={vendedor.id}
           className={`flex items-center justify-between p-3 rounded-lg border ${
