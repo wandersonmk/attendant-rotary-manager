@@ -14,7 +14,7 @@ import {
   SidebarMenuItem,
   SidebarFooter,
 } from "@/components/ui/sidebar"
-import { useLocation } from "react-router-dom"
+import { Link, useLocation } from "react-router-dom"
 
 const primaryMenuItems = [
   {
@@ -62,10 +62,10 @@ export function DashboardSidebar() {
                         : "hover:bg-primary/10 hover:text-primary"
                     }`}
                   >
-                    <a href={item.url} className="flex items-center">
+                    <Link to={item.url} className="flex items-center">
                       <item.icon className="h-5 w-5 mr-3" />
                       <span>{item.title}</span>
-                    </a>
+                    </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}

@@ -8,6 +8,7 @@ import SuperAdminDashboard from "./pages/SuperAdminDashboard";
 import ManagerDashboard from "./pages/ManagerDashboard";
 import AtendimentoRotativo from "./pages/AtendimentoRotativo";
 import NotFound from "./pages/NotFound";
+import Vendedores from "./pages/Vendedores";
 
 const queryClient = new QueryClient();
 
@@ -21,6 +22,7 @@ const App = () => (
           <Route path="/" element={<Login />} />
           <Route path="/super-admin" element={<SuperAdminDashboard />} />
           <Route path="/manager" element={<ManagerDashboard />} />
+          <Route path="/manager/vendedores" element={<Vendedores />} />
           <Route path="/atendimento" element={<AtendimentoRotativo />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
