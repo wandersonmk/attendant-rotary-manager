@@ -4,8 +4,6 @@ import {
   BarChart3,
   Settings,
   ShoppingBag,
-  HelpCircle,
-  MessageSquare,
   LogOut,
   FileText,
   Mail,
@@ -70,11 +68,6 @@ const primaryMenuItems = [
     icon: Receipt,
     url: "/manager/faturas",
     badge: "2",
-  },
-  {
-    title: "Despesas",
-    icon: ShoppingBag,
-    url: "/manager/despesas",
   },
   {
     title: "Histórico",
