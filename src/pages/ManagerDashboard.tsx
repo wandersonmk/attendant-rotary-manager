@@ -4,12 +4,6 @@ import { Users, TrendingUp, UserPlus, Timer, Filter, Download, Settings, User, L
 import { VendedorList } from "@/components/VendedorList";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { ChartContainer, ChartTooltip } from "@/components/ui/chart";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 
 const vendasSemanais = [
   { dia: "Segunda", vendas: 4200 },
@@ -31,48 +25,42 @@ const desempenhoVendedores = [
 const ManagerDashboard = () => {
   return (
     <div className="container mx-auto p-6 space-y-6">
-      <div className="flex justify-between items-center mb-8">
-        <div>
-          <h1 className="text-3xl font-bold text-[#1a365d]">Dashboard Gerente</h1>
-          <p className="text-muted-foreground mt-1">Loja 1 - Visão Geral</p>
-        </div>
-        <div className="flex gap-4 items-center">
+      <div className="flex flex-col gap-4">
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-bold text-[#1a365d]">Dashboard Gerente</h1>
+            <p className="text-muted-foreground mt-1">Loja 1 - Visão Geral</p>
+          </div>
           <Button variant="outline" size="sm" className="flex items-center gap-2">
             <Filter className="h-4 w-4" />
             Últimos 7 dias
           </Button>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="icon">
-                <User className="h-5 w-5" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-48">
-              <DropdownMenuItem className="flex items-center gap-2 cursor-pointer">
-                <UserPlus className="h-4 w-4" />
-                <span>Adicionar Vendedor</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem className="flex items-center gap-2 cursor-pointer">
-                <Download className="h-4 w-4" />
-                <span>Baixar Relatórios</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem className="flex items-center gap-2 cursor-pointer">
-                <Settings className="h-4 w-4" />
-                <span>Configurações</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem className="flex items-center gap-2 cursor-pointer">
-                <User className="h-4 w-4" />
-                <span>Perfil</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem className="flex items-center gap-2 cursor-pointer text-red-600">
-                <LogOut className="h-4 w-4" />
-                <span>Sair</span>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+        </div>
+        
+        <div className="flex items-center justify-end gap-2 border-b pb-4">
+          <Button variant="ghost" size="sm" className="flex items-center gap-2">
+            <UserPlus className="h-4 w-4" />
+            Adicionar Vendedor
+          </Button>
+          <Button variant="ghost" size="sm" className="flex items-center gap-2">
+            <Download className="h-4 w-4" />
+            Baixar Relatórios
+          </Button>
+          <Button variant="ghost" size="sm" className="flex items-center gap-2">
+            <Settings className="h-4 w-4" />
+            Configurações
+          </Button>
+          <Button variant="ghost" size="sm" className="flex items-center gap-2">
+            <User className="h-4 w-4" />
+            Perfil
+          </Button>
+          <Button variant="ghost" size="sm" className="flex items-center gap-2 text-red-600 hover:text-red-700 hover:bg-red-50">
+            <LogOut className="h-4 w-4" />
+            Sair
+          </Button>
         </div>
       </div>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <Card className="bg-white hover:shadow-lg transition-shadow">
           <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
