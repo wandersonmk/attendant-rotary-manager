@@ -4,6 +4,7 @@ import {
   LogOut,
   FileText,
   LayoutDashboard,
+  Navigation2,
 } from "lucide-react"
 import {
   Sidebar,
@@ -22,6 +23,11 @@ const primaryMenuItems = [
     title: "Dashboard",
     icon: LayoutDashboard,
     url: "/manager",
+  },
+  {
+    title: "Atendimento Rotativo",
+    icon: Navigation2,
+    url: "/manager/atendimento-rotativo",
   },
   {
     title: "Vendedores",
