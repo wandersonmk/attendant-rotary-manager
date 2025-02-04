@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Timer, User, Coffee, Power } from "lucide-react";
+import { Timer, User, Coffee, Power, Play } from "lucide-react";
 import { useState } from "react";
 import {
   AlertDialog,
@@ -18,7 +18,7 @@ import { toast } from "@/hooks/use-toast";
 interface Vendedor {
   id: number;
   nome: string;
-  status: "aguardando" | "atendendo" | "pausa" | "encerrado";
+  status: "nao_iniciado" | "aguardando" | "atendendo" | "pausa" | "encerrado";
   posicao: number;
   vendas?: number;
   valorVendas?: number;
@@ -27,10 +27,10 @@ interface Vendedor {
 
 const AtendimentoRotativo = () => {
   const [vendedores, setVendedores] = useState<Vendedor[]>([
-    { id: 1, nome: "Carlos Silva", status: "atendendo", posicao: 1, vendas: 0, valorVendas: 0 },
-    { id: 2, nome: "Ana Oliveira", status: "aguardando", posicao: 2, vendas: 0, valorVendas: 0 },
-    { id: 3, nome: "João Santos", status: "aguardando", posicao: 3, vendas: 0, valorVendas: 0 },
-    { id: 4, nome: "Maria Lima", status: "aguardando", posicao: 4, vendas: 0, valorVendas: 0 },
+    { id: 1, nome: "Carlos Silva", status: "nao_iniciado", posicao: 0, vendas: 0, valorVendas: 0 },
+    { id: 2, nome: "Ana Oliveira", status: "nao_iniciado", posicao: 0, vendas: 0, valorVendas: 0 },
+    { id: 3, nome: "João Santos", status: "nao_iniciado", posicao: 0, vendas: 0, valorVendas: 0 },
+    { id: 4, nome: "Maria Lima", status: "nao_iniciado", posicao: 0, vendas: 0, valorVendas: 0 },
   ]);
 
   const [showVendaDialog, setShowVendaDialog] = useState(false);
@@ -39,6 +39,23 @@ const AtendimentoRotativo = () => {
   const [vendedorPausa, setVendedorPausa] = useState<number | null>(null);
   const [valorVenda, setValorVenda] = useState("");
   const [motivoPausa, setMotivoPausa] = useState<"almoço" | "café" | "">("");
+
+  const handleIniciarExpediente = (id: number) => {
+    setVendedores((prev) => {
+      const ultimaPosicao = Math.max(...prev.filter(v => v.status !== "nao_iniciado").map((v) => v.posicao), 0);
+      return prev.map((vendedor) => {
+        if (vendedor.id === id) {
+          return { ...vendedor, status: "aguardando", posicao: ultimaPosicao + 1 };
+        }
+        return vendedor;
+      });
+    });
+
+    toast({
+      title: "Expediente iniciado",
+      description: "Vendedor adicionado à fila de atendimento",
+    });
+  };
 
   const handleIniciarAtendimento = (id: number) => {
     setVendedores((prev) =>
@@ -49,6 +66,11 @@ const AtendimentoRotativo = () => {
         return vendedor;
       })
     );
+
+    toast({
+      title: "Atendimento iniciado",
+      description: "Bom atendimento!",
+    });
   };
 
   const handleFinalizarAtendimento = (id: number) => {
@@ -64,43 +86,17 @@ const AtendimentoRotativo = () => {
   const handleConfirmarPausa = () => {
     if (!vendedorPausa || !motivoPausa) return;
 
-    setVendedores((prev) => {
-      const vendedorAtual = prev.find((v) => v.id === vendedorPausa);
-      if (!vendedorAtual) return prev;
-
-      const posicaoAtual = vendedorAtual.posicao;
-      const ultimaPosicao = Math.max(...prev.map((v) => v.posicao));
-
-      return prev.map((vendedor) => {
-        if (vendedor.id === vendedorPausa) {
-          return {
-            ...vendedor,
-            status: "pausa",
-            posicao: ultimaPosicao + 1,
-            motivoPausa,
-          };
-        } else if (vendedor.posicao > posicaoAtual) {
-          return { ...vendedor, posicao: vendedor.posicao - 1 };
-        }
-        return vendedor;
-      });
-    });
-
-    toast({
-      title: "Pausa iniciada",
-      description: `Motivo: ${motivoPausa}`,
-    });
-
+    // Primeiro perguntamos sobre a venda
+    setVendedorFinalizando(vendedorPausa);
+    setShowVendaDialog(true);
     setShowPausaDialog(false);
-    setMotivoPausa("");
-    setVendedorPausa(null);
   };
 
   const handleEncerrarExpediente = (id: number) => {
     setVendedores((prev) =>
       prev.map((vendedor) => {
         if (vendedor.id === id) {
-          return { ...vendedor, status: "encerrado" };
+          return { ...vendedor, status: "encerrado", posicao: 0 };
         }
         return vendedor;
       })
@@ -113,14 +109,20 @@ const AtendimentoRotativo = () => {
   };
 
   const handleRetornarPausa = (id: number) => {
-    setVendedores((prev) =>
-      prev.map((vendedor) => {
+    setVendedores((prev) => {
+      const ultimaPosicao = Math.max(...prev.map((v) => v.posicao));
+      return prev.map((vendedor) => {
         if (vendedor.id === id) {
-          return { ...vendedor, status: "aguardando", motivoPausa: undefined };
+          return { 
+            ...vendedor, 
+            status: "aguardando", 
+            posicao: ultimaPosicao + 1,
+            motivoPausa: undefined 
+          };
         }
         return vendedor;
-      })
-    );
+      });
+    });
 
     toast({
       title: "Retorno da pausa",
@@ -135,20 +137,19 @@ const AtendimentoRotativo = () => {
       const vendedorAtual = prev.find((v) => v.id === vendedorFinalizando);
       if (!vendedorAtual) return prev;
 
-      const posicaoAtual = vendedorAtual.posicao;
       const ultimaPosicao = Math.max(...prev.map((v) => v.posicao));
 
       return prev.map((vendedor) => {
         if (vendedor.id === vendedorFinalizando) {
+          const novoStatus = vendedorPausa === vendedorFinalizando ? "pausa" : "aguardando";
           return {
             ...vendedor,
-            status: "aguardando",
+            status: novoStatus,
             posicao: ultimaPosicao + 1,
             vendas: (vendedor.vendas || 0) + 1,
             valorVendas: (vendedor.valorVendas || 0) + Number(valorVenda),
+            motivoPausa: vendedorPausa === vendedorFinalizando ? motivoPausa : undefined,
           };
-        } else if (vendedor.posicao > posicaoAtual) {
-          return { ...vendedor, posicao: vendedor.posicao - 1 };
         }
         return vendedor;
       });
@@ -162,23 +163,25 @@ const AtendimentoRotativo = () => {
     setShowVendaDialog(false);
     setValorVenda("");
     setVendedorFinalizando(null);
+    setVendedorPausa(null);
+    setMotivoPausa("");
   };
 
   const handleSemVenda = () => {
     if (!vendedorFinalizando) return;
 
     setVendedores((prev) => {
-      const vendedorAtual = prev.find((v) => v.id === vendedorFinalizando);
-      if (!vendedorAtual) return prev;
-
-      const posicaoAtual = vendedorAtual.posicao;
       const ultimaPosicao = Math.max(...prev.map((v) => v.posicao));
 
       return prev.map((vendedor) => {
         if (vendedor.id === vendedorFinalizando) {
-          return { ...vendedor, status: "aguardando", posicao: ultimaPosicao + 1 };
-        } else if (vendedor.posicao > posicaoAtual) {
-          return { ...vendedor, posicao: vendedor.posicao - 1 };
+          const novoStatus = vendedorPausa === vendedorFinalizando ? "pausa" : "aguardando";
+          return { 
+            ...vendedor, 
+            status: novoStatus, 
+            posicao: ultimaPosicao + 1,
+            motivoPausa: vendedorPausa === vendedorFinalizando ? motivoPausa : undefined,
+          };
         }
         return vendedor;
       });
@@ -192,13 +195,19 @@ const AtendimentoRotativo = () => {
     setShowVendaDialog(false);
     setValorVenda("");
     setVendedorFinalizando(null);
+    setVendedorPausa(null);
+    setMotivoPausa("");
   };
 
   const proximoVendedor = vendedores
     .filter((v) => v.status === "aguardando")
     .sort((a, b) => a.posicao - b.posicao)[0];
 
-  const vendedoresOrdenados = [...vendedores].sort((a, b) => a.posicao - b.posicao);
+  const vendedoresOrdenados = [...vendedores].sort((a, b) => {
+    if (a.status === "nao_iniciado" && b.status !== "nao_iniciado") return 1;
+    if (a.status !== "nao_iniciado" && b.status === "nao_iniciado") return -1;
+    return a.posicao - b.posicao;
+  });
 
   return (
     <div className="container mx-auto p-4 max-w-2xl">
@@ -220,6 +229,8 @@ const AtendimentoRotativo = () => {
                     ? "bg-yellow-50 border-yellow-200"
                     : vendedor.status === "encerrado"
                     ? "bg-gray-50 border-gray-200"
+                    : vendedor.status === "nao_iniciado"
+                    ? "bg-blue-50 border-blue-200"
                     : "bg-white"
                 }`}
               >
@@ -232,6 +243,8 @@ const AtendimentoRotativo = () => {
                         ? "bg-yellow-100 text-yellow-600"
                         : vendedor.status === "encerrado"
                         ? "bg-gray-100 text-gray-600"
+                        : vendedor.status === "nao_iniciado"
+                        ? "bg-blue-100 text-blue-600"
                         : "bg-gray-100 text-gray-600"
                     }`}
                   >
@@ -241,6 +254,8 @@ const AtendimentoRotativo = () => {
                       <Coffee className="w-5 h-5" />
                     ) : vendedor.status === "encerrado" ? (
                       <Power className="w-5 h-5" />
+                    ) : vendedor.status === "nao_iniciado" ? (
+                      <Play className="w-5 h-5" />
                     ) : (
                       <User className="w-5 h-5" />
                     )}
@@ -255,6 +270,8 @@ const AtendimentoRotativo = () => {
                           ? "text-yellow-600"
                           : vendedor.status === "encerrado"
                           ? "text-gray-600"
+                          : vendedor.status === "nao_iniciado"
+                          ? "text-blue-600"
                           : "text-gray-500"
                       }`}
                     >
@@ -264,11 +281,21 @@ const AtendimentoRotativo = () => {
                         ? `Em pausa (${vendedor.motivoPausa})`
                         : vendedor.status === "encerrado"
                         ? "Expediente encerrado"
+                        : vendedor.status === "nao_iniciado"
+                        ? "Não iniciado"
                         : `${vendedor.posicao}º da fila`}
                     </p>
                   </div>
                 </div>
                 <div className="flex gap-2">
+                  {vendedor.status === "nao_iniciado" && (
+                    <Button
+                      variant="default"
+                      onClick={() => handleIniciarExpediente(vendedor.id)}
+                    >
+                      Iniciar Expediente
+                    </Button>
+                  )}
                   {vendedor.status === "atendendo" && (
                     <>
                       <Button
