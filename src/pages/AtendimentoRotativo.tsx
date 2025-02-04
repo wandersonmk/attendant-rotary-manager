@@ -172,6 +172,8 @@ const AtendimentoRotativo = () => {
       });
     });
 
+    const vendedorAtual = vendedores.find((v) => v.id === vendedorFinalizando);
+
     toast({
       title: "Atendimento finalizado",
       description: vendedorPausa ? "Vendedor movido para pausa" : vendedorAtual?.status === "atendendo" ? "Expediente encerrado" : "Vendedor movido para o final da fila",
