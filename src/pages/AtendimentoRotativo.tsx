@@ -317,7 +317,7 @@ const AtendimentoRotativo = () => {
                   </div>
                 </div>
                 <div className="flex gap-2">
-                  {vendedor.status === "nao_iniciado" && (
+                  {(vendedor.status === "nao_iniciado" || vendedor.status === "encerrado") && (
                     <Button
                       variant="default"
                       onClick={() => handleIniciarExpediente(vendedor.id)}
