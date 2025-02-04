@@ -4,6 +4,7 @@ import { toast } from "@/hooks/use-toast";
 import { VendedorCard } from "@/components/VendedorCard";
 import { VendaDialog } from "@/components/VendaDialog";
 import { PausaDialog } from "@/components/PausaDialog";
+import { ConfettiEffect } from "@/components/ConfettiEffect";
 
 interface Vendedor {
   id: number;
@@ -30,6 +31,7 @@ const AtendimentoRotativo = () => {
   const [valorVenda, setValorVenda] = useState("");
   const [motivoPausa, setMotivoPausa] = useState<"almoço" | "café" | "">("");
   const [isPausaAposVenda, setIsPausaAposVenda] = useState(false);
+  const [showConfetti, setShowConfetti] = useState(false);
 
   const handleIniciarExpediente = (id: number) => {
     setVendedores((prev) => {
@@ -151,10 +153,17 @@ const AtendimentoRotativo = () => {
       });
     });
 
+    setShowConfetti(true);
+    
     toast({
       title: "Venda registrada com sucesso!",
       description: `Valor da venda: ${formatCurrency(valorVenda)}`,
+      variant: "success",
     });
+
+    setTimeout(() => {
+      setShowConfetti(false);
+    }, 3000);
 
     setShowVendaDialog(false);
     setValorVenda("");
@@ -267,6 +276,7 @@ const AtendimentoRotativo = () => {
 
   return (
     <div className="container mx-auto p-4 max-w-2xl">
+      {showConfetti && <ConfettiEffect />}
       <Card>
         <CardHeader>
           <CardTitle className="text-2xl font-bold text-center">
