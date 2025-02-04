@@ -1,7 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Users, TrendingUp, Timer, Search, Bell } from "lucide-react"
-import { VendedorList } from "@/components/VendedorList"
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, LineChart, Line } from "recharts"
 import { ChartContainer } from "@/components/ui/chart"
 import { SidebarProvider } from "@/components/ui/sidebar"
@@ -123,18 +122,6 @@ const ManagerDashboard = () => {
               {/* Ranking de Vendedores */}
               <VendedorRanking />
             </div>
-
-            {/* Lista de Vendedores */}
-            <Card className="bg-white dark:bg-gray-800">
-              <CardHeader>
-                <CardTitle className="text-lg font-semibold">
-                  Lista de Atendimento
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <VendedorList />
-              </CardContent>
-            </Card>
           </div>
         </main>
       </div>
