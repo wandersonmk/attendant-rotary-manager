@@ -379,10 +379,10 @@ const AtendimentoRotativo = () => {
                       )}
                       <Button
                         variant="outline"
+                        size="icon"
                         onClick={() => handleEncerrarExpediente(vendedor.id)}
                       >
-                        <Power className="w-4 h-4 mr-2" />
-                        Encerrar Expediente
+                        <Power className="w-4 h-4" />
                       </Button>
                     </>
                   )}
