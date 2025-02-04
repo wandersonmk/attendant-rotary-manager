@@ -39,8 +39,14 @@ export const ConfettiEffect = ({ duration = 3000 }: ConfettiEffectProps) => {
       width={windowDimensions.width}
       height={windowDimensions.height}
       recycle={false}
-      numberOfPieces={200}
-      colors={['#F2FCE2', '#FEF7CD', '#FEC6A1', '#E5DEFF', '#FFDEE2', '#FDE1D3', '#D3E4FD']}
+      numberOfPieces={500}
+      gravity={0.3}
+      initialVelocityY={20}
+      initialVelocityX={10}
+      explosionSpeed={10}
+      friction={0.99}
+      wind={0.05}
+      colors={['#FFD700', '#FFA500', '#FF6347', '#FF69B4', '#4169E1', '#32CD32', '#9370DB']}
     />
   );
 };
