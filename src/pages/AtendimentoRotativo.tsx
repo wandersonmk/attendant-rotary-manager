@@ -29,6 +29,7 @@ const AtendimentoRotativo = () => {
   const [vendedorPausa, setVendedorPausa] = useState<number | null>(null);
   const [valorVenda, setValorVenda] = useState("");
   const [motivoPausa, setMotivoPausa] = useState<"almoço" | "café" | "">("");
+  const [isPausaAposVenda, setIsPausaAposVenda] = useState(false);
 
   const handleIniciarExpediente = (id: number) => {
     setVendedores((prev) => {
@@ -69,8 +70,15 @@ const AtendimentoRotativo = () => {
   };
 
   const handleIniciarPausa = (id: number) => {
-    setVendedorPausa(id);
-    setShowPausaDialog(true);
+    const vendedor = vendedores.find(v => v.id === id);
+    if (vendedor?.status === "atendendo") {
+      setVendedorFinalizando(id);
+      setIsPausaAposVenda(true);
+      setShowVendaDialog(true);
+    } else {
+      setVendedorPausa(id);
+      setShowPausaDialog(true);
+    }
   };
 
   const handleConfirmarPausa = () => {
@@ -129,14 +137,14 @@ const AtendimentoRotativo = () => {
 
       return prev.map((vendedor) => {
         if (vendedor.id === vendedorFinalizando) {
-          const novoStatus = vendedorPausa === vendedorFinalizando ? "pausa" : "aguardando";
+          const novoStatus = isPausaAposVenda ? "pausa" : "aguardando";
           return {
             ...vendedor,
             status: novoStatus,
             posicao: novoStatus === "pausa" ? 0 : ultimaPosicao + 1,
             vendas: (vendedor.vendas || 0) + 1,
             valorVendas: (vendedor.valorVendas || 0) + Number(valorVenda),
-            motivoPausa: vendedorPausa === vendedorFinalizando ? motivoPausa : undefined,
+            motivoPausa: isPausaAposVenda ? motivoPausa : undefined,
           };
         }
         return vendedor;
@@ -151,8 +159,13 @@ const AtendimentoRotativo = () => {
     setShowVendaDialog(false);
     setValorVenda("");
     setVendedorFinalizando(null);
-    setVendedorPausa(null);
-    setMotivoPausa("");
+    
+    if (isPausaAposVenda) {
+      setShowPausaDialog(true);
+      setVendedorPausa(vendedorFinalizando);
+    }
+    
+    setIsPausaAposVenda(false);
   };
 
   const handleSemVenda = () => {
@@ -164,11 +177,12 @@ const AtendimentoRotativo = () => {
 
       return prev.map((vendedor) => {
         if (vendedor.id === vendedorFinalizando) {
-          const novoStatus = "aguardando";
+          const novoStatus = isPausaAposVenda ? "pausa" : "aguardando";
           return { 
             ...vendedor, 
             status: novoStatus, 
-            posicao: ultimaPosicao + 1,
+            posicao: novoStatus === "pausa" ? 0 : ultimaPosicao + 1,
+            motivoPausa: isPausaAposVenda ? motivoPausa : undefined,
           };
         }
         return vendedor;
@@ -183,8 +197,13 @@ const AtendimentoRotativo = () => {
     setShowVendaDialog(false);
     setValorVenda("");
     setVendedorFinalizando(null);
-    setVendedorPausa(null);
-    setMotivoPausa("");
+    
+    if (isPausaAposVenda) {
+      setShowPausaDialog(true);
+      setVendedorPausa(vendedorFinalizando);
+    }
+    
+    setIsPausaAposVenda(false);
   };
 
   const handleRetornarPausa = (id: number) => {
