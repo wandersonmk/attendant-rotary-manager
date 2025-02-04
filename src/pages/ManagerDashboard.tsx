@@ -1,9 +1,11 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Users, TrendingUp, UserPlus, Timer, Filter, Download, Settings, User, LogOut } from "lucide-react";
-import { VendedorList } from "@/components/VendedorList";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
-import { ChartContainer, ChartTooltip } from "@/components/ui/chart";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Users, TrendingUp, Timer, Filter } from "lucide-react"
+import { VendedorList } from "@/components/VendedorList"
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip } from "recharts"
+import { ChartContainer } from "@/components/ui/chart"
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
+import { DashboardSidebar } from "@/components/DashboardSidebar"
 
 const vendasSemanais = [
   { dia: "Segunda", vendas: 4200 },
@@ -24,44 +26,28 @@ const desempenhoVendedores = [
 
 const ManagerDashboard = () => {
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <div className="flex flex-col gap-4">
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-3xl font-bold text-[#1a365d]">Dashboard Gerente</h1>
-            <p className="text-muted-foreground mt-1">Loja 1 - Visão Geral</p>
-          </div>
-          <Button variant="outline" size="sm" className="flex items-center gap-2">
-            <Filter className="h-4 w-4" />
-            Últimos 7 dias
-          </Button>
-        </div>
-        
-        <div className="flex items-center justify-end gap-2 border-b pb-4">
-          <Button variant="ghost" size="sm" className="flex items-center gap-2">
-            <UserPlus className="h-4 w-4" />
-            Adicionar Vendedor
-          </Button>
-          <Button variant="ghost" size="sm" className="flex items-center gap-2">
-            <Download className="h-4 w-4" />
-            Baixar Relatórios
-          </Button>
-          <Button variant="ghost" size="sm" className="flex items-center gap-2">
-            <Settings className="h-4 w-4" />
-            Configurações
-          </Button>
-          <Button variant="ghost" size="sm" className="flex items-center gap-2">
-            <User className="h-4 w-4" />
-            Perfil
-          </Button>
-          <Button variant="ghost" size="sm" className="flex items-center gap-2 text-red-600 hover:text-red-700 hover:bg-red-50">
-            <LogOut className="h-4 w-4" />
-            Sair
-          </Button>
-        </div>
-      </div>
+    <SidebarProvider defaultOpen>
+      <div className="flex min-h-screen w-full">
+        <DashboardSidebar />
+        <main className="flex-1">
+          <div className="container p-6 space-y-6">
+            <div className="flex flex-col gap-4">
+              <div className="flex justify-between items-center">
+                <div>
+                  <h1 className="text-3xl font-bold text-[#1a365d]">Dashboard Gerente</h1>
+                  <p className="text-muted-foreground mt-1">Loja 1 - Visão Geral</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <SidebarTrigger />
+                  <Button variant="outline" size="sm" className="flex items-center gap-2">
+                    <Filter className="h-4 w-4" />
+                    Últimos 7 dias
+                  </Button>
+                </div>
+              </div>
+            </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <Card className="bg-white hover:shadow-lg transition-shadow">
           <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
             <CardTitle className="text-sm font-medium text-muted-foreground">Vendedores Ativos</CardTitle>
@@ -105,9 +91,9 @@ const ManagerDashboard = () => {
             <p className="text-xs text-[#1EAEDB] mt-1">+5% desde ontem</p>
           </CardContent>
         </Card>
-      </div>
+            </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
         <Card className="bg-white">
           <CardHeader>
             <CardTitle className="text-lg font-semibold">Vendas Semanais</CardTitle>
@@ -193,9 +179,12 @@ const ManagerDashboard = () => {
             <VendedorList />
           </CardContent>
         </Card>
+            </div>
+          </div>
+        </main>
       </div>
-    </div>
-  );
-};
+    </SidebarProvider>
+  )
+}
 
-export default ManagerDashboard;
+export default ManagerDashboard
