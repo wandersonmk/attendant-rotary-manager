@@ -1,78 +1,31 @@
 import {
-  Home,
   Users,
-  BarChart3,
   Settings,
-  ShoppingBag,
   LogOut,
   FileText,
-  Mail,
-  History,
-  Receipt,
-  Wallet,
 } from "lucide-react"
 import {
   Sidebar,
   SidebarContent,
   SidebarGroup,
   SidebarGroupContent,
-  SidebarGroupLabel,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarFooter,
-  SidebarSeparator,
 } from "@/components/ui/sidebar"
 import { useLocation } from "react-router-dom"
 
 const primaryMenuItems = [
   {
-    title: "Dashboard",
-    icon: Home,
-    url: "/manager",
-  },
-  {
-    title: "Serviços",
-    icon: ShoppingBag,
-    url: "/manager/servicos",
-  },
-  {
-    title: "Equipe",
+    title: "Vendedores",
     icon: Users,
-    url: "/manager/equipe",
+    url: "/manager/vendedores",
   },
   {
     title: "Relatórios",
     icon: FileText,
     url: "/manager/relatorios",
-    badge: "4",
-  },
-  {
-    title: "Minhas Tarefas",
-    icon: BarChart3,
-    url: "/manager/tarefas",
-    badge: "1",
-  },
-  {
-    title: "Mensagens",
-    icon: Mail,
-    url: "/manager/mensagens",
-  },
-  {
-    title: "Transações",
-    icon: Wallet,
-    url: "/manager/transacoes",
-  },
-  {
-    title: "Faturas",
-    icon: Receipt,
-    url: "/manager/faturas",
-    badge: "2",
-  },
-  {
-    title: "Histórico",
-    icon: History,
-    url: "/manager/historico",
   },
   {
     title: "Configurações",
@@ -109,16 +62,9 @@ export function DashboardSidebar() {
                         : "hover:bg-primary/10 hover:text-primary"
                     }`}
                   >
-                    <a href={item.url} className="flex items-center justify-between">
-                      <div className="flex items-center">
-                        <item.icon className="h-5 w-5 mr-3" />
-                        <span>{item.title}</span>
-                      </div>
-                      {item.badge && (
-                        <span className="bg-green-500 text-white text-xs px-2 py-0.5 rounded-full">
-                          {item.badge}
-                        </span>
-                      )}
+                    <a href={item.url} className="flex items-center">
+                      <item.icon className="h-5 w-5 mr-3" />
+                      <span>{item.title}</span>
                     </a>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
