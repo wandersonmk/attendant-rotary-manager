@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Plus, Minus } from "lucide-react";
+import { UserPlus, UserMinus } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { useToast } from "@/components/ui/use-toast";
 
 interface Vendedor {
   id: number;
@@ -19,16 +21,58 @@ export const VendedorList = () => {
     { id: 6, nome: "Julia Rocha", status: "disponível" },
   ]);
 
-  const toggleVendedor = (id: number) => {
-    setVendedores(vendedores.map(v => 
-      v.id === id 
-        ? { ...v, status: v.status === "disponível" ? "atendendo" : "disponível", tempoEspera: undefined }
-        : v
-    ));
+  const [novoVendedor, setNovoVendedor] = useState("");
+  const { toast } = useToast();
+
+  const adicionarVendedor = () => {
+    if (!novoVendedor.trim()) {
+      toast({
+        title: "Erro",
+        description: "Por favor, insira o nome do vendedor",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const novoId = Math.max(...vendedores.map(v => v.id)) + 1;
+    setVendedores([
+      ...vendedores,
+      {
+        id: novoId,
+        nome: novoVendedor,
+        status: "disponível"
+      }
+    ]);
+    setNovoVendedor("");
+    toast({
+      title: "Sucesso",
+      description: "Vendedor adicionado com sucesso",
+    });
+  };
+
+  const removerVendedor = (id: number) => {
+    setVendedores(vendedores.filter(v => v.id !== id));
+    toast({
+      title: "Sucesso",
+      description: "Vendedor removido com sucesso",
+    });
   };
 
   return (
     <div className="space-y-4">
+      <div className="flex gap-4">
+        <Input
+          placeholder="Nome do novo vendedor"
+          value={novoVendedor}
+          onChange={(e) => setNovoVendedor(e.target.value)}
+          className="flex-1"
+        />
+        <Button onClick={adicionarVendedor}>
+          <UserPlus className="h-4 w-4 mr-1" />
+          Adicionar Vendedor
+        </Button>
+      </div>
+
       {vendedores.map((vendedor) => (
         <div
           key={vendedor.id}
@@ -48,21 +92,12 @@ export const VendedorList = () => {
             </span>
           </div>
           <Button
-            variant={vendedor.status === "disponível" ? "destructive" : "default"}
+            variant="destructive"
             size="sm"
-            onClick={() => toggleVendedor(vendedor.id)}
+            onClick={() => removerVendedor(vendedor.id)}
           >
-            {vendedor.status === "disponível" ? (
-              <>
-                <Minus className="h-4 w-4 mr-1" />
-                Remover
-              </>
-            ) : (
-              <>
-                <Plus className="h-4 w-4 mr-1" />
-                Adicionar
-              </>
-            )}
+            <UserMinus className="h-4 w-4 mr-1" />
+            Remover
           </Button>
         </div>
       ))}
