@@ -1,9 +1,15 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Users, TrendingUp, UserPlus, Timer, Filter } from "lucide-react";
+import { Users, TrendingUp, UserPlus, Timer, Filter, Download, Settings, User, LogOut } from "lucide-react";
 import { VendedorList } from "@/components/VendedorList";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { ChartContainer, ChartTooltip } from "@/components/ui/chart";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const vendasSemanais = [
   { dia: "Segunda", vendas: 4200 },
@@ -30,11 +36,40 @@ const ManagerDashboard = () => {
           <h1 className="text-3xl font-bold text-[#1a365d]">Dashboard Gerente</h1>
           <p className="text-muted-foreground mt-1">Loja 1 - Visão Geral</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-4 items-center">
           <Button variant="outline" size="sm" className="flex items-center gap-2">
             <Filter className="h-4 w-4" />
             Últimos 7 dias
           </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="icon">
+                <User className="h-5 w-5" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuItem className="flex items-center gap-2 cursor-pointer">
+                <UserPlus className="h-4 w-4" />
+                <span>Adicionar Vendedor</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem className="flex items-center gap-2 cursor-pointer">
+                <Download className="h-4 w-4" />
+                <span>Baixar Relatórios</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem className="flex items-center gap-2 cursor-pointer">
+                <Settings className="h-4 w-4" />
+                <span>Configurações</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem className="flex items-center gap-2 cursor-pointer">
+                <User className="h-4 w-4" />
+                <span>Perfil</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem className="flex items-center gap-2 cursor-pointer text-red-600">
+                <LogOut className="h-4 w-4" />
+                <span>Sair</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
       
