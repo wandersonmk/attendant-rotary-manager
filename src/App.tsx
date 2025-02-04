@@ -23,6 +23,7 @@ const App = () => (
           <Route path="/super-admin" element={<SuperAdminDashboard />} />
           <Route path="/manager" element={<ManagerDashboard />} />
           <Route path="/manager/vendedores" element={<Vendedores />} />
+          <Route path="/manager/filtros" element={<div>Página de Filtros</div>} />
           <Route path="/atendimento" element={<AtendimentoRotativo />} />
           <Route path="*" element={<NotFound />} />
         </Routes>

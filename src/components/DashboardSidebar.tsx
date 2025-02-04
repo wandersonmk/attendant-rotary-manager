@@ -3,6 +3,7 @@ import {
   Settings,
   LogOut,
   FileText,
+  Filter,
 } from "lucide-react"
 import {
   Sidebar,
@@ -21,6 +22,11 @@ const primaryMenuItems = [
     title: "Vendedores",
     icon: Users,
     url: "/manager/vendedores",
+  },
+  {
+    title: "Filtros",
+    icon: Filter,
+    url: "/manager/filtros",
   },
   {
     title: "Relatórios",
