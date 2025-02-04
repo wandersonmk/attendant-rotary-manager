@@ -47,16 +47,16 @@ export default {
           foreground: "#FFFFFF",
         },
         muted: {
-          DEFAULT: "#f3f4f6",
-          foreground: "#6b7280",
+          DEFAULT: "hsl(var(--muted))",
+          foreground: "hsl(var(--muted-foreground))",
         },
         accent: {
-          DEFAULT: "#f8fafc",
-          foreground: "#0f172a",
+          DEFAULT: "hsl(var(--accent))",
+          foreground: "hsl(var(--accent-foreground))",
         },
         card: {
-          DEFAULT: "#FFFFFF",
-          foreground: "#0f172a",
+          DEFAULT: "hsl(var(--card))",
+          foreground: "hsl(var(--card-foreground))",
         },
       },
       borderRadius: {
