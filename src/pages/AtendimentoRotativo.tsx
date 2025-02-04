@@ -26,7 +26,7 @@ interface Vendedor {
 
 const AtendimentoRotativo = () => {
   const [vendedores, setVendedores] = useState<Vendedor[]>([
-    { id: 1, nome: "Carlos Silva", status: "aguardando", posicao: 1, vendas: 0, valorVendas: 0 },
+    { id: 1, nome: "Carlos Silva", status: "atendendo", posicao: 1, vendas: 0, valorVendas: 0 },
     { id: 2, nome: "Ana Oliveira", status: "aguardando", posicao: 2, vendas: 0, valorVendas: 0 },
     { id: 3, nome: "João Santos", status: "aguardando", posicao: 3, vendas: 0, valorVendas: 0 },
     { id: 4, nome: "Maria Lima", status: "aguardando", posicao: 4, vendas: 0, valorVendas: 0 },
@@ -118,6 +118,11 @@ const AtendimentoRotativo = () => {
     setVendedorFinalizando(null);
   };
 
+  // Encontra o primeiro vendedor aguardando na fila
+  const proximoVendedor = vendedores
+    .filter((v) => v.status === "aguardando")
+    .sort((a, b) => a.posicao - b.posicao)[0];
+
   const vendedoresOrdenados = [...vendedores].sort((a, b) => a.posicao - b.posicao);
 
   return (
@@ -168,21 +173,22 @@ const AtendimentoRotativo = () => {
                     </p>
                   </div>
                 </div>
-                {vendedor.status === "aguardando" && vendedor.posicao === 1 && (
+                {vendedor.status === "atendendo" ? (
                   <Button
-                    onClick={() => handleIniciarAtendimento(vendedor.id)}
-                    variant="default"
-                  >
-                    Iniciar Atendimento
-                  </Button>
-                )}
-                {vendedor.status === "atendendo" && (
-                  <Button
-                    onClick={() => handleFinalizarAtendimento(vendedor.id)}
                     variant="outline"
+                    onClick={() => handleFinalizarAtendimento(vendedor.id)}
                   >
                     Finalizar
                   </Button>
+                ) : (
+                  proximoVendedor?.id === vendedor.id && (
+                    <Button
+                      variant="default"
+                      onClick={() => handleIniciarAtendimento(vendedor.id)}
+                    >
+                      Iniciar Atendimento
+                    </Button>
+                  )
                 )}
               </div>
             ))}
