@@ -175,7 +175,7 @@ const Relatorios = () => {
                   <CardTitle>Ranking de Vendedores</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <VendedorRanking />
+                  <VendedorRanking data={filteredRanking} />
                 </CardContent>
               </Card>
             </div>
