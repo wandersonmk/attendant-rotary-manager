@@ -367,15 +367,25 @@ const AtendimentoRotativo = () => {
                       Retornar
                     </Button>
                   )}
-                  {vendedor.status === "aguardando" &&
-                    proximoVendedor?.id === vendedor.id && (
+                  {vendedor.status === "aguardando" && (
+                    <>
+                      {proximoVendedor?.id === vendedor.id && (
+                        <Button
+                          variant="default"
+                          onClick={() => handleIniciarAtendimento(vendedor.id)}
+                        >
+                          Iniciar Atendimento
+                        </Button>
+                      )}
                       <Button
-                        variant="default"
-                        onClick={() => handleIniciarAtendimento(vendedor.id)}
+                        variant="outline"
+                        onClick={() => handleEncerrarExpediente(vendedor.id)}
                       >
-                        Iniciar Atendimento
+                        <Power className="w-4 h-4 mr-2" />
+                        Encerrar Expediente
                       </Button>
-                    )}
+                    </>
+                  )}
                 </div>
               </div>
             ))}
