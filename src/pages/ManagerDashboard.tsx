@@ -2,6 +2,25 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Users, TrendingUp, UserPlus, Timer, Filter } from "lucide-react";
 import { VendedorList } from "@/components/VendedorList";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import { ChartContainer, ChartTooltip } from "@/components/ui/chart";
+
+const vendasSemanais = [
+  { dia: "Segunda", vendas: 4200 },
+  { dia: "Terça", vendas: 3800 },
+  { dia: "Quarta", vendas: 5100 },
+  { dia: "Quinta", vendas: 4700 },
+  { dia: "Sexta", vendas: 6200 },
+  { dia: "Sábado", vendas: 5400 },
+  { dia: "Domingo", vendas: 3500 },
+];
+
+const desempenhoVendedores = [
+  { nome: "Carlos Silva", vendas: 15200 },
+  { nome: "Ana Oliveira", vendas: 13500 },
+  { nome: "João Santos", vendas: 9800 },
+  { nome: "Maria Lima", vendas: 8500 },
+];
 
 const ManagerDashboard = () => {
   return (
@@ -65,52 +84,90 @@ const ManagerDashboard = () => {
         </Card>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
         <Card className="bg-white">
-          <CardHeader className="flex justify-between items-center">
-            <div>
-              <CardTitle className="text-lg font-semibold">Lista de Atendimento</CardTitle>
-              <p className="text-sm text-muted-foreground">Status dos vendedores em tempo real</p>
-            </div>
-            <Button className="bg-[#9b87f5] hover:bg-[#7E69AB]">
-              Adicionar Vendedor
-            </Button>
+          <CardHeader>
+            <CardTitle className="text-lg font-semibold">Vendas Semanais</CardTitle>
+            <p className="text-sm text-muted-foreground">Desempenho dos últimos 7 dias</p>
           </CardHeader>
           <CardContent>
-            <VendedorList />
+            <div className="h-[300px]">
+              <ChartContainer
+                config={{
+                  vendas: {
+                    theme: {
+                      light: "#9b87f5",
+                      dark: "#7E69AB",
+                    },
+                  },
+                }}
+              >
+                <BarChart data={vendasSemanais}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="dia" />
+                  <YAxis />
+                  <Tooltip content={({ active, payload }) => {
+                    if (active && payload && payload.length) {
+                      return (
+                        <div className="bg-white p-2 border rounded shadow">
+                          <p className="text-sm">R$ {payload[0].value}</p>
+                        </div>
+                      );
+                    }
+                    return null;
+                  }} />
+                  <Bar dataKey="vendas" fill="#9b87f5" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ChartContainer>
+            </div>
           </CardContent>
         </Card>
 
         <Card className="bg-white">
           <CardHeader>
-            <CardTitle className="text-lg font-semibold">Ranking de Vendedores</CardTitle>
-            <p className="text-sm text-muted-foreground">Top vendedores do dia</p>
+            <CardTitle className="text-lg font-semibold">Desempenho por Vendedor</CardTitle>
+            <p className="text-sm text-muted-foreground">Total de vendas por vendedor</p>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              {[
-                { nome: "Carlos Silva", vendas: "R$ 1.520", variacao: "+12%" },
-                { nome: "Ana Oliveira", vendas: "R$ 1.350", variacao: "+8%" },
-                { nome: "João Santos", vendas: "R$ 980", variacao: "+5%" },
-                { nome: "Maria Lima", vendas: "R$ 850", variacao: "+3%" },
-              ].map((vendedor, index) => (
-                <div
-                  key={vendedor.nome}
-                  className="flex items-center justify-between p-3 bg-[#F2FCE2] rounded-lg hover:bg-[#F2FCE2]/80 transition-colors"
-                >
-                  <div className="flex items-center gap-3">
-                    <span className="flex items-center justify-center w-6 h-6 rounded-full bg-[#9b87f5] text-white text-sm">
-                      {index + 1}
-                    </span>
-                    <span className="font-medium">{vendedor.nome}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="font-semibold">{vendedor.vendas}</span>
-                    <span className="text-xs text-[#10b981]">{vendedor.variacao}</span>
-                  </div>
-                </div>
-              ))}
+            <div className="h-[300px]">
+              <ChartContainer
+                config={{
+                  vendas: {
+                    theme: {
+                      light: "#10b981",
+                      dark: "#059669",
+                    },
+                  },
+                }}
+              >
+                <BarChart data={desempenhoVendedores} layout="vertical">
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis type="number" />
+                  <YAxis dataKey="nome" type="category" width={100} />
+                  <Tooltip content={({ active, payload }) => {
+                    if (active && payload && payload.length) {
+                      return (
+                        <div className="bg-white p-2 border rounded shadow">
+                          <p className="text-sm">R$ {payload[0].value}</p>
+                        </div>
+                      );
+                    }
+                    return null;
+                  }} />
+                  <Bar dataKey="vendas" fill="#10b981" radius={[0, 4, 4, 0]} />
+                </BarChart>
+              </ChartContainer>
             </div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-white">
+          <CardHeader>
+            <CardTitle className="text-lg font-semibold">Lista de Atendimento</CardTitle>
+            <p className="text-sm text-muted-foreground">Status dos vendedores em tempo real</p>
+          </CardHeader>
+          <CardContent>
+            <VendedorList />
           </CardContent>
         </Card>
       </div>
