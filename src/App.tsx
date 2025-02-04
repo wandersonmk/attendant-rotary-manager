@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Login from "./pages/Login";
 import SuperAdminDashboard from "./pages/SuperAdminDashboard";
 import ManagerDashboard from "./pages/ManagerDashboard";
+import AtendimentoRotativo from "./pages/AtendimentoRotativo";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -20,6 +21,7 @@ const App = () => (
           <Route path="/" element={<Login />} />
           <Route path="/super-admin" element={<SuperAdminDashboard />} />
           <Route path="/manager" element={<ManagerDashboard />} />
+          <Route path="/atendimento" element={<AtendimentoRotativo />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
