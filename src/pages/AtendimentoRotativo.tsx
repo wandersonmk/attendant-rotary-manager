@@ -185,6 +185,28 @@ const AtendimentoRotativo = () => {
     setMotivoPausa("");
   };
 
+  const handleRetornarPausa = (id: number) => {
+    setVendedores((prev) => {
+      const ultimaPosicao = Math.max(...prev.map((v) => v.posicao));
+      return prev.map((vendedor) => {
+        if (vendedor.id === id) {
+          return { 
+            ...vendedor, 
+            status: "aguardando", 
+            posicao: ultimaPosicao + 1,
+            motivoPausa: undefined 
+          };
+        }
+        return vendedor;
+      });
+    });
+
+    toast({
+      title: "Retorno da pausa",
+      description: "Bem-vindo de volta!",
+    });
+  };
+
   const proximoVendedor = vendedores
     .filter((v) => v.status === "aguardando")
     .sort((a, b) => a.posicao - b.posicao)[0];
