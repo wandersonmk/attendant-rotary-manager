@@ -1,15 +1,18 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 
-const vendedoresRanking = [
-  { id: 1, nome: "Carlos Silva", vendas: 45, valor: 15000 },
-  { id: 2, nome: "Ana Oliveira", vendas: 38, valor: 12500 },
-  { id: 3, nome: "João Santos", vendas: 35, valor: 11800 },
-  { id: 4, nome: "Maria Lima", vendas: 32, valor: 10500 },
-  { id: 5, nome: "Pedro Costa", vendas: 30, valor: 9800 },
-];
+interface Vendedor {
+  id: number;
+  nome: string;
+  vendas: number;
+  valor: number;
+}
 
-export const VendedorRanking = () => {
+interface VendedorRankingProps {
+  data: Vendedor[];
+}
+
+export const VendedorRanking = ({ data }: VendedorRankingProps) => {
   return (
     <Card className="bg-white dark:bg-gray-800">
       <CardHeader>
@@ -19,7 +22,7 @@ export const VendedorRanking = () => {
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          {vendedoresRanking.map((vendedor, index) => (
+          {data.map((vendedor, index) => (
             <div
               key={vendedor.id}
               className="flex items-center justify-between p-3 rounded-lg border bg-card hover:bg-accent/50 transition-colors"
