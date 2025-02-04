@@ -34,7 +34,7 @@ export const VendaDialog = ({
     if (Number(valorVenda) <= 0) {
       toast({
         title: "Valor inválido",
-        description: "Não é possível confirmar uma venda com valor zerado",
+        description: `Não é possível confirmar uma venda com valor ${formatCurrency(valorVenda)}`,
         variant: "destructive",
       });
       return;
@@ -46,17 +46,17 @@ export const VendaDialog = ({
     <AlertDialog open={showDialog} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Finalizar Atendimento</AlertDialogTitle>
+          <AlertDialogTitle>Registrar Venda</AlertDialogTitle>
           <AlertDialogDescription>
-            Houve venda neste atendimento?
+            Informe o valor da venda realizada
           </AlertDialogDescription>
         </AlertDialogHeader>
-        <div className="my-4">
+        <div className="grid gap-4 py-4">
           <Input
             type="text"
-            value={valorVenda ? formatCurrency(valorVenda) : "R$ 0,00"}
+            value={formatCurrency(valorVenda)}
             onChange={onValorVendaChange}
-            className="text-right"
+            placeholder="R$ 0,00"
           />
         </div>
         <AlertDialogFooter>
