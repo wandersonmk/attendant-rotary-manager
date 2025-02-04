@@ -27,7 +27,7 @@ const primaryMenuItems = [
   {
     title: "Atendimento Rotativo",
     icon: Navigation2,
-    url: "/manager/atendimento-rotativo",
+    url: "/atendimento",
   },
   {
     title: "Vendedores",
