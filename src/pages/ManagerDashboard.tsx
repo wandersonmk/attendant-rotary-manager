@@ -52,8 +52,9 @@ const ManagerDashboard = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
-          <CardHeader>
+          <CardHeader className="flex justify-between items-center">
             <CardTitle>Lista de Atendimento</CardTitle>
+            <Button>Adicionar Vendedor</Button>
           </CardHeader>
           <CardContent>
             <VendedorList />
