@@ -7,8 +7,36 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Bell, Lock, User, Palette } from "lucide-react"
 import { DashboardSidebar } from "@/components/DashboardSidebar"
 import { SidebarProvider } from "@/components/ui/sidebar"
+import { useEffect, useState } from "react"
+import { useToast } from "@/components/ui/use-toast"
 
 export default function Configuracoes() {
+  const [isDarkMode, setIsDarkMode] = useState(false);
+  const { toast } = useToast();
+
+  useEffect(() => {
+    // Verifica se já existe uma preferência salva
+    const savedTheme = localStorage.getItem('theme');
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    
+    setIsDarkMode(savedTheme === 'dark' || (!savedTheme && prefersDark));
+    
+    // Aplica o tema inicial
+    document.documentElement.classList.toggle('dark', savedTheme === 'dark' || (!savedTheme && prefersDark));
+  }, []);
+
+  const toggleTheme = () => {
+    const newTheme = !isDarkMode;
+    setIsDarkMode(newTheme);
+    document.documentElement.classList.toggle('dark', newTheme);
+    localStorage.setItem('theme', newTheme ? 'dark' : 'light');
+    
+    toast({
+      title: newTheme ? "Modo escuro ativado" : "Modo claro ativado",
+      description: "O tema foi alterado com sucesso.",
+    });
+  };
+
   return (
     <SidebarProvider>
       <div className="flex h-screen w-full">
@@ -127,14 +155,14 @@ export default function Configuracoes() {
                     <div className="flex items-center justify-between">
                       <div className="space-y-0.5">
                         <Label>Tema Escuro</Label>
-                        <p className="text-sm text-gray-500">Alterne entre tema claro e escuro</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">Alterne entre tema claro e escuro</p>
                       </div>
-                      <Switch />
+                      <Switch checked={isDarkMode} onCheckedChange={toggleTheme} />
                     </div>
                     <div className="flex items-center justify-between">
                       <div className="space-y-0.5">
                         <Label>Modo Compacto</Label>
-                        <p className="text-sm text-gray-500">Reduza o espaçamento entre elementos</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">Reduza o espaçamento entre elementos</p>
                       </div>
                       <Switch />
                     </div>
