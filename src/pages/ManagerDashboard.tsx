@@ -1,12 +1,14 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Users, TrendingUp, Timer, Filter, UserPlus, Search, Bell } from "lucide-react"
+import { Users, TrendingUp, Timer, Search, Bell } from "lucide-react"
 import { VendedorList } from "@/components/VendedorList"
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, LineChart, Line } from "recharts"
 import { ChartContainer } from "@/components/ui/chart"
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
+import { SidebarProvider } from "@/components/ui/sidebar"
 import { DashboardSidebar } from "@/components/DashboardSidebar"
 import { Input } from "@/components/ui/input"
+import { VendedorRanking } from "@/components/VendedorRanking"
+import { MetricasLoja } from "@/components/MetricasLoja"
 
 const vendasSemanais = [
   { dia: "Jan 5", vendas: 4200, lucro: 3800 },
@@ -58,68 +60,8 @@ const ManagerDashboard = () => {
               </div>
             </div>
 
-            {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <Card className="bg-primary text-white">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-lg font-medium">
-                    Vendas Financeiras
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">R$ 525,90</div>
-                  <div className="flex items-center mt-2 text-sm">
-                    <TrendingUp className="h-4 w-4 mr-1" />
-                    <span className="text-green-300">+17% vs último mês</span>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-white dark:bg-gray-800">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-lg font-medium">
-                    Serviços Bancários
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">R$ 789,55</div>
-                  <div className="flex items-center mt-2 text-sm">
-                    <TrendingUp className="h-4 w-4 mr-1 text-green-500" />
-                    <span className="text-green-500">+21% vs último mês</span>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-white dark:bg-gray-800">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-lg font-medium">
-                    Serviços Financeiros
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">R$ 236,10</div>
-                  <div className="flex items-center mt-2 text-sm">
-                    <TrendingUp className="h-4 w-4 mr-1 text-red-500 transform rotate-180" />
-                    <span className="text-red-500">-11% vs último mês</span>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-white dark:bg-gray-800">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-lg font-medium">
-                    Pedidos de Serviço
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">R$ 980,50</div>
-                  <div className="flex items-center mt-2 text-sm">
-                    <TrendingUp className="h-4 w-4 mr-1 text-green-500" />
-                    <span className="text-green-500">+24% vs último mês</span>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+            {/* Métricas da Loja */}
+            <MetricasLoja />
 
             {/* Charts Section */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -178,17 +120,21 @@ const ManagerDashboard = () => {
                 </CardContent>
               </Card>
 
-              <Card className="bg-white dark:bg-gray-800">
-                <CardHeader>
-                  <CardTitle className="text-lg font-semibold">
-                    Lista de Atendimento
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <VendedorList />
-                </CardContent>
-              </Card>
+              {/* Ranking de Vendedores */}
+              <VendedorRanking />
             </div>
+
+            {/* Lista de Vendedores */}
+            <Card className="bg-white dark:bg-gray-800">
+              <CardHeader>
+                <CardTitle className="text-lg font-semibold">
+                  Lista de Atendimento
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <VendedorList />
+              </CardContent>
+            </Card>
           </div>
         </main>
       </div>
