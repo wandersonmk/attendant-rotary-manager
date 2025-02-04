@@ -21,6 +21,7 @@ import {
   SidebarFooter,
   SidebarSeparator,
 } from "@/components/ui/sidebar"
+import { useLocation } from "react-router-dom"
 
 const primaryMenuItems = [
   {
@@ -31,17 +32,17 @@ const primaryMenuItems = [
   {
     title: "Vendedores",
     icon: Users,
-    url: "#vendedores",
+    url: "/manager/vendedores",
   },
   {
     title: "Relatórios",
     icon: BarChart3,
-    url: "#relatorios",
+    url: "/manager/relatorios",
   },
   {
     title: "Configurações",
     icon: Settings,
-    url: "#configuracoes",
+    url: "/manager/configuracoes",
   },
 ]
 
@@ -49,21 +50,23 @@ const secondaryMenuItems = [
   {
     title: "Produtos",
     icon: ShoppingBag,
-    url: "#produtos",
+    url: "/manager/produtos",
   },
   {
     title: "Suporte",
     icon: MessageSquare,
-    url: "#suporte",
+    url: "/manager/suporte",
   },
   {
     title: "FAQ",
     icon: HelpCircle,
-    url: "#faq",
+    url: "/manager/faq",
   },
 ]
 
 export function DashboardSidebar() {
+  const location = useLocation()
+
   return (
     <Sidebar>
       <SidebarContent>
@@ -76,8 +79,12 @@ export function DashboardSidebar() {
                   <SidebarMenuButton
                     tooltip={item.title}
                     asChild
-                    isActive={item.url === "/manager"}
-                    className="w-full rounded-md transition-colors hover:bg-[#E5DEFF] hover:text-[#7E69AB] px-3 py-2"
+                    isActive={location.pathname === item.url}
+                    className={`w-full rounded-md transition-colors px-3 py-2 ${
+                      location.pathname === item.url
+                        ? "bg-[#E5DEFF] text-[#7E69AB]"
+                        : "hover:bg-[#E5DEFF] hover:text-[#7E69AB]"
+                    }`}
                   >
                     <a href={item.url}>
                       <item.icon />
@@ -101,7 +108,12 @@ export function DashboardSidebar() {
                   <SidebarMenuButton 
                     tooltip={item.title} 
                     asChild
-                    className="w-full rounded-md transition-colors hover:bg-[#F2FCE2] hover:text-[#10b981] px-3 py-2"
+                    isActive={location.pathname === item.url}
+                    className={`w-full rounded-md transition-colors px-3 py-2 ${
+                      location.pathname === item.url
+                        ? "bg-[#F2FCE2] text-[#10b981]"
+                        : "hover:bg-[#F2FCE2] hover:text-[#10b981]"
+                    }`}
                   >
                     <a href={item.url}>
                       <item.icon />
