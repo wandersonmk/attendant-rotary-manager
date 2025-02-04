@@ -3,7 +3,7 @@ import {
   Settings,
   LogOut,
   FileText,
-  Filter,
+  LayoutDashboard,
 } from "lucide-react"
 import {
   Sidebar,
@@ -19,14 +19,14 @@ import { Link, useLocation } from "react-router-dom"
 
 const primaryMenuItems = [
   {
+    title: "Dashboard",
+    icon: LayoutDashboard,
+    url: "/manager/filtros",
+  },
+  {
     title: "Vendedores",
     icon: Users,
     url: "/manager/vendedores",
-  },
-  {
-    title: "Filtros",
-    icon: Filter,
-    url: "/manager/filtros",
   },
   {
     title: "Relatórios",
