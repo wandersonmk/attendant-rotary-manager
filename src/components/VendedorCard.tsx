@@ -124,12 +124,6 @@ export const VendedorCard = ({
             >
               Pausar
             </Button>
-            <Button
-              variant="outline"
-              onClick={() => onEncerrarExpediente(vendedor.id)}
-            >
-              Encerrar
-            </Button>
           </>
         )}
         {vendedor.status === "pausa" && (
