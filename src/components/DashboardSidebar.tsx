@@ -7,7 +7,11 @@ import {
   HelpCircle,
   MessageSquare,
   LogOut,
-  UserCircle,
+  FileText,
+  Mail,
+  History,
+  Receipt,
+  Wallet,
 } from "lucide-react"
 import {
   Sidebar,
@@ -30,37 +34,57 @@ const primaryMenuItems = [
     url: "/manager",
   },
   {
-    title: "Vendedores",
+    title: "Serviços",
+    icon: ShoppingBag,
+    url: "/manager/servicos",
+  },
+  {
+    title: "Equipe",
     icon: Users,
-    url: "/manager/vendedores",
+    url: "/manager/equipe",
   },
   {
     title: "Relatórios",
-    icon: BarChart3,
+    icon: FileText,
     url: "/manager/relatorios",
+    badge: "4",
+  },
+  {
+    title: "Minhas Tarefas",
+    icon: BarChart3,
+    url: "/manager/tarefas",
+    badge: "1",
+  },
+  {
+    title: "Mensagens",
+    icon: Mail,
+    url: "/manager/mensagens",
+  },
+  {
+    title: "Transações",
+    icon: Wallet,
+    url: "/manager/transacoes",
+  },
+  {
+    title: "Faturas",
+    icon: Receipt,
+    url: "/manager/faturas",
+    badge: "2",
+  },
+  {
+    title: "Despesas",
+    icon: ShoppingBag,
+    url: "/manager/despesas",
+  },
+  {
+    title: "Histórico",
+    icon: History,
+    url: "/manager/historico",
   },
   {
     title: "Configurações",
     icon: Settings,
     url: "/manager/configuracoes",
-  },
-]
-
-const secondaryMenuItems = [
-  {
-    title: "Produtos",
-    icon: ShoppingBag,
-    url: "/manager/produtos",
-  },
-  {
-    title: "Suporte",
-    icon: MessageSquare,
-    url: "/manager/suporte",
-  },
-  {
-    title: "FAQ",
-    icon: HelpCircle,
-    url: "/manager/faq",
   },
 ]
 
@@ -70,8 +94,14 @@ export function DashboardSidebar() {
   return (
     <Sidebar>
       <SidebarContent>
+        <div className="p-4">
+          <img 
+            src="/lovable-uploads/77ac6086-d65e-4a8a-bb37-988e5f194efc.png" 
+            alt="Logo" 
+            className="h-8 w-auto"
+          />
+        </div>
         <SidebarGroup>
-          <SidebarGroupLabel>Menu Principal</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {primaryMenuItems.map((item) => (
@@ -82,42 +112,20 @@ export function DashboardSidebar() {
                     isActive={location.pathname === item.url}
                     className={`w-full rounded-md transition-colors px-3 py-2 ${
                       location.pathname === item.url
-                        ? "bg-[#E5DEFF] text-[#7E69AB]"
-                        : "hover:bg-[#E5DEFF] hover:text-[#7E69AB]"
+                        ? "bg-primary text-white"
+                        : "hover:bg-primary/10 hover:text-primary"
                     }`}
                   >
-                    <a href={item.url}>
-                      <item.icon />
-                      <span>{item.title}</span>
-                    </a>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-
-        <SidebarSeparator />
-
-        <SidebarGroup>
-          <SidebarGroupLabel>Suporte</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {secondaryMenuItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton 
-                    tooltip={item.title} 
-                    asChild
-                    isActive={location.pathname === item.url}
-                    className={`w-full rounded-md transition-colors px-3 py-2 ${
-                      location.pathname === item.url
-                        ? "bg-[#F2FCE2] text-[#10b981]"
-                        : "hover:bg-[#F2FCE2] hover:text-[#10b981]"
-                    }`}
-                  >
-                    <a href={item.url}>
-                      <item.icon />
-                      <span>{item.title}</span>
+                    <a href={item.url} className="flex items-center justify-between">
+                      <div className="flex items-center">
+                        <item.icon className="h-5 w-5 mr-3" />
+                        <span>{item.title}</span>
+                      </div>
+                      {item.badge && (
+                        <span className="bg-green-500 text-white text-xs px-2 py-0.5 rounded-full">
+                          {item.badge}
+                        </span>
+                      )}
                     </a>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -127,25 +135,18 @@ export function DashboardSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="border-t">
-        <div className="flex items-center gap-2 p-4">
-          <UserCircle className="h-8 w-8" />
-          <div className="flex flex-col">
-            <span className="text-sm font-medium">João Silva</span>
-            <span className="text-xs text-muted-foreground">Gerente</span>
-          </div>
+      <SidebarFooter className="border-t p-4">
+        <div className="flex items-center justify-between">
+          <button className="flex items-center space-x-2 text-sm font-medium">
+            <span className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center">
+              JS
+            </span>
+            <span>João Silva</span>
+          </button>
+          <button className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
+            <LogOut className="h-5 w-5" />
+          </button>
         </div>
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton
-              tooltip="Sair"
-              className="w-full rounded-md transition-colors text-red-600 hover:text-red-700 hover:bg-red-50 px-3 py-2"
-            >
-              <LogOut />
-              <span>Sair</span>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </SidebarMenu>
       </SidebarFooter>
     </Sidebar>
   )

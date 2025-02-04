@@ -1,192 +1,193 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Users, TrendingUp, Timer, Filter, UserPlus } from "lucide-react"
+import { Users, TrendingUp, Timer, Filter, UserPlus, Search, Bell } from "lucide-react"
 import { VendedorList } from "@/components/VendedorList"
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip } from "recharts"
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, LineChart, Line } from "recharts"
 import { ChartContainer } from "@/components/ui/chart"
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
 import { DashboardSidebar } from "@/components/DashboardSidebar"
+import { Input } from "@/components/ui/input"
 
 const vendasSemanais = [
-  { dia: "Segunda", vendas: 4200 },
-  { dia: "Terça", vendas: 3800 },
-  { dia: "Quarta", vendas: 5100 },
-  { dia: "Quinta", vendas: 4700 },
-  { dia: "Sexta", vendas: 6200 },
-  { dia: "Sábado", vendas: 5400 },
-  { dia: "Domingo", vendas: 3500 },
-];
-
-const desempenhoVendedores = [
-  { nome: "Carlos Silva", vendas: 15200 },
-  { nome: "Ana Oliveira", vendas: 13500 },
-  { nome: "João Santos", vendas: 9800 },
-  { nome: "Maria Lima", vendas: 8500 },
+  { dia: "Jan 5", vendas: 4200, lucro: 3800 },
+  { dia: "Jan 6", vendas: 3800, lucro: 4200 },
+  { dia: "Jan 7", vendas: 5100, lucro: 4800 },
+  { dia: "Jan 8", vendas: 4700, lucro: 5200 },
+  { dia: "Jan 9", vendas: 6200, lucro: 5800 },
+  { dia: "Jan 10", vendas: 5400, lucro: 5100 },
+  { dia: "Jan 11", vendas: 5800, lucro: 5400 },
 ];
 
 const ManagerDashboard = () => {
   return (
     <SidebarProvider defaultOpen>
-      <div className="flex min-h-screen w-full">
+      <div className="flex min-h-screen w-full bg-[#F8FAFC] dark:bg-[#1A1F2C]">
         <DashboardSidebar />
-        <main className="flex-1">
+        <main className="flex-1 overflow-auto">
           <div className="container p-6 space-y-6">
-            <div className="flex flex-col gap-4">
-              <div className="flex justify-between items-center">
-                <div>
-                  <h1 className="text-3xl font-bold text-[#1a365d]">
-                    Dashboard Gerente
-                  </h1>
-                  <p className="text-muted-foreground mt-1">
-                    Loja 1 - Visão Geral
-                  </p>
+            {/* Header */}
+            <div className="flex justify-between items-center">
+              <div>
+                <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">
+                  Dashboard
+                </h1>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  Bem-vindo ao painel de controle
+                </p>
+              </div>
+              <div className="flex items-center gap-4">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                  <Input
+                    placeholder="Pesquisar..."
+                    className="pl-10 w-64 bg-white dark:bg-gray-800"
+                  />
                 </div>
+                <Button variant="ghost" size="icon">
+                  <Bell className="h-5 w-5" />
+                </Button>
                 <div className="flex items-center gap-2">
-                  <SidebarTrigger />
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="flex items-center gap-2"
-                  >
-                    <Filter className="h-4 w-4" />
-                    Últimos 7 dias
-                  </Button>
+                  <div className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center">
+                    JD
+                  </div>
+                  <div className="text-sm">
+                    <p className="font-medium">João Silva</p>
+                    <p className="text-gray-500 dark:text-gray-400">Gerente</p>
+                  </div>
                 </div>
               </div>
             </div>
 
+            {/* Stats Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Card className="bg-white hover:shadow-lg transition-shadow">
-          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Vendedores Ativos</CardTitle>
-            <Users className="h-4 w-4 text-[#9b87f5]" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">6</div>
-            <p className="text-xs text-muted-foreground mt-1">+2 desde o último mês</p>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-white hover:shadow-lg transition-shadow">
-          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Vendas Hoje</CardTitle>
-            <TrendingUp className="h-4 w-4 text-[#10b981]" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">R$ 4.320</div>
-            <p className="text-xs text-[#10b981] mt-1">+15% desde ontem</p>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-white hover:shadow-lg transition-shadow">
-          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Em Atendimento</CardTitle>
-            <Timer className="h-4 w-4 text-[#7E69AB]" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">2</div>
-            <p className="text-xs text-muted-foreground mt-1">Tempo médio: 15min</p>
-          </CardContent>
-        </Card>
-
-              <Card className="bg-white hover:shadow-lg transition-shadow">
-                <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">Taxa de Conversão</CardTitle>
-                  <UserPlus className="h-4 w-4 text-[#1EAEDB]" />
+              <Card className="bg-primary text-white">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-lg font-medium">
+                    Vendas Financeiras
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">68%</div>
-                  <p className="text-xs text-[#1EAEDB] mt-1">+5% desde ontem</p>
+                  <div className="text-2xl font-bold">R$ 525,90</div>
+                  <div className="flex items-center mt-2 text-sm">
+                    <TrendingUp className="h-4 w-4 mr-1" />
+                    <span className="text-green-300">+17% vs último mês</span>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-white dark:bg-gray-800">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-lg font-medium">
+                    Serviços Bancários
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">R$ 789,55</div>
+                  <div className="flex items-center mt-2 text-sm">
+                    <TrendingUp className="h-4 w-4 mr-1 text-green-500" />
+                    <span className="text-green-500">+21% vs último mês</span>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-white dark:bg-gray-800">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-lg font-medium">
+                    Serviços Financeiros
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">R$ 236,10</div>
+                  <div className="flex items-center mt-2 text-sm">
+                    <TrendingUp className="h-4 w-4 mr-1 text-red-500 transform rotate-180" />
+                    <span className="text-red-500">-11% vs último mês</span>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-white dark:bg-gray-800">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-lg font-medium">
+                    Pedidos de Serviço
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">R$ 980,50</div>
+                  <div className="flex items-center mt-2 text-sm">
+                    <TrendingUp className="h-4 w-4 mr-1 text-green-500" />
+                    <span className="text-green-500">+24% vs último mês</span>
+                  </div>
                 </CardContent>
               </Card>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
-        <Card className="bg-white">
-          <CardHeader>
-            <CardTitle className="text-lg font-semibold">Vendas Semanais</CardTitle>
-            <p className="text-sm text-muted-foreground">Desempenho dos últimos 7 dias</p>
-          </CardHeader>
-          <CardContent>
-            <div className="h-[300px]">
-              <ChartContainer
-                config={{
-                  vendas: {
-                    theme: {
-                      light: "#9b87f5",
-                      dark: "#7E69AB",
-                    },
-                  },
-                }}
-              >
-                <BarChart data={vendasSemanais}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="dia" />
-                  <YAxis />
-                  <Tooltip content={({ active, payload }) => {
-                    if (active && payload && payload.length) {
-                      return (
-                        <div className="bg-white p-2 border rounded shadow">
-                          <p className="text-sm">R$ {payload[0].value}</p>
-                        </div>
-                      );
-                    }
-                    return null;
-                  }} />
-                  <Bar dataKey="vendas" fill="#9b87f5" radius={[4, 4, 0, 0]} />
-                </BarChart>
-              </ChartContainer>
-            </div>
-          </CardContent>
-        </Card>
+            {/* Charts Section */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <Card className="bg-white dark:bg-gray-800">
+                <CardHeader>
+                  <div className="flex justify-between items-center">
+                    <CardTitle className="text-lg font-semibold">
+                      Análise de Receita
+                    </CardTitle>
+                    <div className="flex gap-2">
+                      <Button variant="outline" size="sm">8 Jan</Button>
+                      <Button variant="outline" size="sm">8 Feb</Button>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="h-[300px]">
+                    <ChartContainer
+                      config={{
+                        vendas: {
+                          theme: {
+                            light: "#4A7BF7",
+                            dark: "#4A7BF7",
+                          },
+                        },
+                        lucro: {
+                          theme: {
+                            light: "#10b981",
+                            dark: "#10b981",
+                          },
+                        },
+                      }}
+                    >
+                      <LineChart data={vendasSemanais}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="dia" />
+                        <YAxis />
+                        <Tooltip />
+                        <Line 
+                          type="monotone" 
+                          dataKey="vendas" 
+                          stroke="#4A7BF7" 
+                          strokeWidth={2}
+                          dot={{ r: 4 }}
+                        />
+                        <Line 
+                          type="monotone" 
+                          dataKey="lucro" 
+                          stroke="#10b981" 
+                          strokeWidth={2}
+                          dot={{ r: 4 }}
+                        />
+                      </LineChart>
+                    </ChartContainer>
+                  </div>
+                </CardContent>
+              </Card>
 
-        <Card className="bg-white">
-          <CardHeader>
-            <CardTitle className="text-lg font-semibold">Desempenho por Vendedor</CardTitle>
-            <p className="text-sm text-muted-foreground">Total de vendas por vendedor</p>
-          </CardHeader>
-          <CardContent>
-            <div className="h-[300px]">
-              <ChartContainer
-                config={{
-                  vendas: {
-                    theme: {
-                      light: "#10b981",
-                      dark: "#059669",
-                    },
-                  },
-                }}
-              >
-                <BarChart data={desempenhoVendedores} layout="vertical">
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis type="number" />
-                  <YAxis dataKey="nome" type="category" width={100} />
-                  <Tooltip content={({ active, payload }) => {
-                    if (active && payload && payload.length) {
-                      return (
-                        <div className="bg-white p-2 border rounded shadow">
-                          <p className="text-sm">R$ {payload[0].value}</p>
-                        </div>
-                      );
-                    }
-                    return null;
-                  }} />
-                  <Bar dataKey="vendas" fill="#10b981" radius={[0, 4, 4, 0]} />
-                </BarChart>
-              </ChartContainer>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-white">
-          <CardHeader>
-            <CardTitle className="text-lg font-semibold">Lista de Atendimento</CardTitle>
-            <p className="text-sm text-muted-foreground">Status dos vendedores em tempo real</p>
-          </CardHeader>
-          <CardContent>
-            <VendedorList />
-          </CardContent>
-        </Card>
+              <Card className="bg-white dark:bg-gray-800">
+                <CardHeader>
+                  <CardTitle className="text-lg font-semibold">
+                    Lista de Atendimento
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <VendedorList />
+                </CardContent>
+              </Card>
             </div>
           </div>
         </main>
