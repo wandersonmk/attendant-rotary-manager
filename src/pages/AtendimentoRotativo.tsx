@@ -14,7 +14,6 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
-import InputMask from "react-input-mask";
 
 interface Vendedor {
   id: number;
@@ -219,13 +218,13 @@ const AtendimentoRotativo = () => {
   });
 
   const formatCurrency = (value: string) => {
-    // Remove non-numeric characters
+    // Remove todos os caracteres não numéricos
     const numericValue = value.replace(/\D/g, "");
     
-    // Convert to number and divide by 100 to handle cents
+    // Converte para número e divide por 100 para lidar com centavos
     const numberValue = Number(numericValue) / 100;
     
-    // Format as Brazilian currency with minimum 2 decimal places
+    // Formata como moeda brasileira
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
       currency: 'BRL',
@@ -381,12 +380,11 @@ const AtendimentoRotativo = () => {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <div className="my-4">
-            <InputMask
-              mask="R$ 999.999,99"
-              maskChar="0"
+            <Input
+              type="text"
               value={valorVenda ? formatCurrency(valorVenda) : "R$ 0,00"}
               onChange={handleValorVendaChange}
-              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              className="text-right"
             />
           </div>
           <AlertDialogFooter>
