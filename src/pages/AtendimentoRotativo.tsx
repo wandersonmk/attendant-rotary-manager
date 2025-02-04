@@ -125,12 +125,11 @@ const AtendimentoRotativo = () => {
 
       return prev.map((vendedor) => {
         if (vendedor.id === vendedorFinalizando) {
-          const novoStatus = vendedorPausa === vendedorFinalizando ? "pausa" : 
-                            vendedor.status === "atendendo" ? "encerrado" : "aguardando";
+          const novoStatus = vendedorPausa === vendedorFinalizando ? "pausa" : "aguardando";
           return {
             ...vendedor,
             status: novoStatus,
-            posicao: novoStatus === "encerrado" ? 0 : ultimaPosicao + 1,
+            posicao: novoStatus === "pausa" ? 0 : ultimaPosicao + 1,
             vendas: (vendedor.vendas || 0) + 1,
             valorVendas: (vendedor.valorVendas || 0) + Number(valorVenda),
             motivoPausa: vendedorPausa === vendedorFinalizando ? motivoPausa : undefined,
@@ -160,12 +159,11 @@ const AtendimentoRotativo = () => {
 
       return prev.map((vendedor) => {
         if (vendedor.id === vendedorFinalizando) {
-          const novoStatus = vendedorPausa === vendedorFinalizando ? "pausa" : 
-                            vendedor.status === "atendendo" ? "encerrado" : "aguardando";
+          const novoStatus = vendedorPausa === vendedorFinalizando ? "pausa" : "aguardando";
           return { 
             ...vendedor, 
             status: novoStatus, 
-            posicao: novoStatus === "encerrado" ? 0 : ultimaPosicao + 1,
+            posicao: novoStatus === "pausa" ? 0 : ultimaPosicao + 1,
             motivoPausa: vendedorPausa === vendedorFinalizando ? motivoPausa : undefined,
           };
         }
@@ -175,7 +173,7 @@ const AtendimentoRotativo = () => {
 
     toast({
       title: "Atendimento finalizado",
-      description: vendedorPausa ? "Vendedor movido para pausa" : "Expediente encerrado",
+      description: vendedorPausa ? "Vendedor movido para pausa" : "Vendedor movido para o final da fila",
     });
 
     setShowVendaDialog(false);
