@@ -86,10 +86,28 @@ const AtendimentoRotativo = () => {
   const handleConfirmarPausa = () => {
     if (!vendedorPausa || !motivoPausa) return;
 
-    // Primeiro perguntamos sobre a venda
-    setVendedorFinalizando(vendedorPausa);
-    setShowVendaDialog(true);
+    setVendedores((prev) =>
+      prev.map((vendedor) => {
+        if (vendedor.id === vendedorPausa) {
+          return {
+            ...vendedor,
+            status: "pausa",
+            posicao: 0,
+            motivoPausa: motivoPausa,
+          };
+        }
+        return vendedor;
+      })
+    );
+
+    toast({
+      title: "Pausa iniciada",
+      description: `Pausa para ${motivoPausa}`,
+    });
+
     setShowPausaDialog(false);
+    setVendedorPausa(null);
+    setMotivoPausa("");
   };
 
   const handleEncerrarExpediente = (id: number) => {
