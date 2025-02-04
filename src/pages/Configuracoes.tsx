@@ -15,13 +15,10 @@ export default function Configuracoes() {
   const { toast } = useToast();
 
   useEffect(() => {
-    // Verifica se já existe uma preferência salva
     const savedTheme = localStorage.getItem('theme');
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
     
     setIsDarkMode(savedTheme === 'dark' || (!savedTheme && prefersDark));
-    
-    // Aplica o tema inicial
     document.documentElement.classList.toggle('dark', savedTheme === 'dark' || (!savedTheme && prefersDark));
   }, []);
 
@@ -158,13 +155,6 @@ export default function Configuracoes() {
                         <p className="text-sm text-gray-500 dark:text-gray-400">Alterne entre tema claro e escuro</p>
                       </div>
                       <Switch checked={isDarkMode} onCheckedChange={toggleTheme} />
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <div className="space-y-0.5">
-                        <Label>Modo Compacto</Label>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">Reduza o espaçamento entre elementos</p>
-                      </div>
-                      <Switch />
                     </div>
                   </CardContent>
                 </Card>
