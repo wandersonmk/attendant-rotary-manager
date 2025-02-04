@@ -2,12 +2,19 @@ import { SidebarProvider } from "@/components/ui/sidebar"
 import { DashboardSidebar } from "@/components/DashboardSidebar"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { FileSpreadsheet, FileText } from "lucide-react"
+import { FileSpreadsheet, FileText, ChevronDown } from "lucide-react"
 import { VendedorRanking } from "@/components/VendedorRanking"
 import { MetricasLoja } from "@/components/MetricasLoja"
 import { toast } from "@/components/ui/use-toast"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import jsPDF from 'jspdf'
 import * as XLSX from 'xlsx'
+import { useState } from "react"
 
 const vendedoresRanking = [
   { id: 1, nome: "Carlos Silva", vendas: 45, valor: 15000 },
@@ -25,6 +32,12 @@ const metricas = {
 }
 
 const Relatorios = () => {
+  const [selectedVendedor, setSelectedVendedor] = useState<string>("Todos");
+
+  const filteredRanking = selectedVendedor === "Todos" 
+    ? vendedoresRanking 
+    : vendedoresRanking.filter(v => v.nome === selectedVendedor);
+
   const exportToPDF = () => {
     const doc = new jsPDF()
     
@@ -45,7 +58,7 @@ const Relatorios = () => {
     doc.setFontSize(14)
     doc.text("Ranking de Vendedores", 20, 100)
     doc.setFontSize(12)
-    vendedoresRanking.forEach((vendedor, index) => {
+    filteredRanking.forEach((vendedor, index) => {
       doc.text(
         `${index + 1}. ${vendedor.nome} - ${vendedor.vendas} vendas - R$ ${vendedor.valor.toLocaleString()}`,
         20,
@@ -78,7 +91,7 @@ const Relatorios = () => {
     // Ranking
     const rankingData = [
       ["Posição", "Nome", "Vendas", "Valor Total"],
-      ...vendedoresRanking.map((v, i) => [
+      ...filteredRanking.map((v, i) => [
         i + 1,
         v.nome,
         v.vendas,
@@ -106,7 +119,28 @@ const Relatorios = () => {
               <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">
                 Relatórios
               </h1>
-              <div className="flex gap-4">
+              <div className="flex gap-4 items-center">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" className="flex items-center gap-2">
+                      {selectedVendedor}
+                      <ChevronDown className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent>
+                    <DropdownMenuItem onClick={() => setSelectedVendedor("Todos")}>
+                      Todos
+                    </DropdownMenuItem>
+                    {vendedoresRanking.map((vendedor) => (
+                      <DropdownMenuItem
+                        key={vendedor.id}
+                        onClick={() => setSelectedVendedor(vendedor.nome)}
+                      >
+                        {vendedor.nome}
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
                 <Button
                   variant="outline"
                   className="flex items-center gap-2"
