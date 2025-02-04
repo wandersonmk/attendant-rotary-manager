@@ -125,11 +125,11 @@ const AtendimentoRotativo = () => {
 
       return prev.map((vendedor) => {
         if (vendedor.id === vendedorFinalizando) {
-          const novoStatus = vendedorPausa === vendedorFinalizando ? "pausa" : "aguardando";
+          const novoStatus = vendedorPausa === vendedorFinalizando ? "pausa" : vendedorAtual.status === "atendendo" && !vendedorPausa ? "encerrado" : "aguardando";
           return {
             ...vendedor,
             status: novoStatus,
-            posicao: novoStatus === "pausa" ? 0 : ultimaPosicao + 1,
+            posicao: novoStatus === "pausa" || novoStatus === "encerrado" ? 0 : ultimaPosicao + 1,
             vendas: (vendedor.vendas || 0) + 1,
             valorVendas: (vendedor.valorVendas || 0) + Number(valorVenda),
             motivoPausa: vendedorPausa === vendedorFinalizando ? motivoPausa : undefined,
@@ -155,15 +155,16 @@ const AtendimentoRotativo = () => {
     if (!vendedorFinalizando) return;
 
     setVendedores((prev) => {
+      const vendedorAtual = prev.find((v) => v.id === vendedorFinalizando);
       const ultimaPosicao = Math.max(...prev.map((v) => v.posicao));
 
       return prev.map((vendedor) => {
         if (vendedor.id === vendedorFinalizando) {
-          const novoStatus = vendedorPausa === vendedorFinalizando ? "pausa" : "aguardando";
+          const novoStatus = vendedorPausa === vendedorFinalizando ? "pausa" : vendedorAtual?.status === "atendendo" && !vendedorPausa ? "encerrado" : "aguardando";
           return { 
             ...vendedor, 
             status: novoStatus, 
-            posicao: novoStatus === "pausa" ? 0 : ultimaPosicao + 1,
+            posicao: novoStatus === "pausa" || novoStatus === "encerrado" ? 0 : ultimaPosicao + 1,
             motivoPausa: vendedorPausa === vendedorFinalizando ? motivoPausa : undefined,
           };
         }
@@ -173,7 +174,7 @@ const AtendimentoRotativo = () => {
 
     toast({
       title: "Atendimento finalizado",
-      description: vendedorPausa ? "Vendedor movido para pausa" : "Vendedor movido para o final da fila",
+      description: vendedorPausa ? "Vendedor movido para pausa" : vendedorAtual?.status === "atendendo" ? "Expediente encerrado" : "Vendedor movido para o final da fila",
     });
 
     setShowVendaDialog(false);
