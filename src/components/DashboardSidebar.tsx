@@ -1,4 +1,14 @@
-import { Home, Users, BarChart3, Settings, LogOut } from "lucide-react"
+import {
+  Home,
+  Users,
+  BarChart3,
+  Settings,
+  ShoppingBag,
+  HelpCircle,
+  MessageSquare,
+  LogOut,
+  UserCircle,
+} from "lucide-react"
 import {
   Sidebar,
   SidebarContent,
@@ -8,10 +18,11 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarTrigger,
+  SidebarFooter,
+  SidebarSeparator,
 } from "@/components/ui/sidebar"
 
-const menuItems = [
+const primaryMenuItems = [
   {
     title: "Dashboard",
     icon: Home,
@@ -34,15 +45,33 @@ const menuItems = [
   },
 ]
 
+const secondaryMenuItems = [
+  {
+    title: "Produtos",
+    icon: ShoppingBag,
+    url: "#produtos",
+  },
+  {
+    title: "Suporte",
+    icon: MessageSquare,
+    url: "#suporte",
+  },
+  {
+    title: "FAQ",
+    icon: HelpCircle,
+    url: "#faq",
+  },
+]
+
 export function DashboardSidebar() {
   return (
     <Sidebar>
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Menu</SidebarGroupLabel>
+          <SidebarGroupLabel>Menu Principal</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {menuItems.map((item) => (
+              {primaryMenuItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton
                     tooltip={item.title}
@@ -56,19 +85,51 @@ export function DashboardSidebar() {
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  tooltip="Sair"
-                  className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                >
-                  <LogOut />
-                  <span>Sair</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        <SidebarSeparator />
+
+        <SidebarGroup>
+          <SidebarGroupLabel>Suporte</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {secondaryMenuItems.map((item) => (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton tooltip={item.title} asChild>
+                    <a href={item.url}>
+                      <item.icon />
+                      <span>{item.title}</span>
+                    </a>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
+
+      <SidebarFooter className="border-t">
+        <div className="flex items-center gap-2 p-4">
+          <UserCircle className="h-8 w-8" />
+          <div className="flex flex-col">
+            <span className="text-sm font-medium">João Silva</span>
+            <span className="text-xs text-muted-foreground">Gerente</span>
+          </div>
+        </div>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              tooltip="Sair"
+              className="text-red-600 hover:text-red-700 hover:bg-red-50"
+            >
+              <LogOut />
+              <span>Sair</span>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarFooter>
     </Sidebar>
   )
 }

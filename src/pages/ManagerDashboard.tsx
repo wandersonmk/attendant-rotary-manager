@@ -34,12 +34,20 @@ const ManagerDashboard = () => {
             <div className="flex flex-col gap-4">
               <div className="flex justify-between items-center">
                 <div>
-                  <h1 className="text-3xl font-bold text-[#1a365d]">Dashboard Gerente</h1>
-                  <p className="text-muted-foreground mt-1">Loja 1 - Visão Geral</p>
+                  <h1 className="text-3xl font-bold text-[#1a365d]">
+                    Dashboard Gerente
+                  </h1>
+                  <p className="text-muted-foreground mt-1">
+                    Loja 1 - Visão Geral
+                  </p>
                 </div>
                 <div className="flex items-center gap-2">
                   <SidebarTrigger />
-                  <Button variant="outline" size="sm" className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex items-center gap-2"
+                  >
                     <Filter className="h-4 w-4" />
                     Últimos 7 dias
                   </Button>
