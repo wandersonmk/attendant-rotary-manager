@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
+import InputMask from "react-input-mask";
 
 interface Vendedor {
   id: number;
@@ -217,6 +218,25 @@ const AtendimentoRotativo = () => {
     return a.posicao - b.posicao;
   });
 
+  const formatCurrency = (value: string) => {
+    // Remove non-numeric characters
+    const numericValue = value.replace(/\D/g, "");
+    
+    // Convert to number and divide by 100 to handle cents
+    const numberValue = Number(numericValue) / 100;
+    
+    // Format as Brazilian currency
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL'
+    }).format(numberValue);
+  };
+
+  const handleValorVendaChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const rawValue = e.target.value.replace(/\D/g, "");
+    setValorVenda(rawValue);
+  };
+
   return (
     <div className="container mx-auto p-4 max-w-2xl">
       <Card>
@@ -359,11 +379,12 @@ const AtendimentoRotativo = () => {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <div className="my-4">
-            <Input
-              type="number"
-              placeholder="Valor da venda (R$)"
-              value={valorVenda}
-              onChange={(e) => setValorVenda(e.target.value)}
+            <InputMask
+              mask="R$ 999.999,99"
+              value={valorVenda ? formatCurrency(valorVenda) : ""}
+              onChange={handleValorVendaChange}
+              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              placeholder="Valor da venda"
             />
           </div>
           <AlertDialogFooter>
