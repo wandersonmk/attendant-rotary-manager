@@ -120,27 +120,32 @@ const Relatorios = () => {
                 Relatórios
               </h1>
               <div className="flex gap-4 items-center">
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="outline" className="flex items-center gap-2">
-                      {selectedVendedor}
-                      <ChevronDown className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent className="bg-white dark:bg-gray-800 border shadow-lg">
-                    <DropdownMenuItem onClick={() => setSelectedVendedor("Todos")}>
-                      Todos
-                    </DropdownMenuItem>
-                    {vendedoresRanking.map((vendedor) => (
-                      <DropdownMenuItem
-                        key={vendedor.id}
-                        onClick={() => setSelectedVendedor(vendedor.nome)}
-                      >
-                        {vendedor.nome}
+                <div className="flex flex-col items-end gap-1">
+                  <span className="text-sm text-gray-600 dark:text-gray-400">
+                    Filtrar por Vendedor:
+                  </span>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline" className="flex items-center gap-2">
+                        {selectedVendedor}
+                        <ChevronDown className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent className="bg-white dark:bg-gray-800 border shadow-lg">
+                      <DropdownMenuItem onClick={() => setSelectedVendedor("Todos")}>
+                        Todos
                       </DropdownMenuItem>
-                    ))}
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                      {vendedoresRanking.map((vendedor) => (
+                        <DropdownMenuItem
+                          key={vendedor.id}
+                          onClick={() => setSelectedVendedor(vendedor.nome)}
+                        >
+                          {vendedor.nome}
+                        </DropdownMenuItem>
+                      ))}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
                 <Button
                   variant="outline"
                   className="flex items-center gap-2"
