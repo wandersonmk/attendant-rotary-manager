@@ -42,6 +42,17 @@ export const VendaDialog = ({
     onConfirmarVenda();
   };
 
+  const formatValue = (value: string) => {
+    const numericValue = value.replace(/\D/g, "");
+    const numberValue = Number(numericValue) / 100;
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    }).format(numberValue);
+  };
+
   return (
     <AlertDialog open={showDialog} onOpenChange={onOpenChange}>
       <AlertDialogContent>
@@ -54,7 +65,7 @@ export const VendaDialog = ({
         <div className="grid gap-4 py-4">
           <Input
             type="text"
-            value={formatCurrency(valorVenda)}
+            value={formatValue(valorVenda)}
             onChange={onValorVendaChange}
             placeholder="R$ 0,00"
           />
