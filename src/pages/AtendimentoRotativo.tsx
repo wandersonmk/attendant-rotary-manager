@@ -153,7 +153,7 @@ const AtendimentoRotativo = () => {
 
     toast({
       title: "Venda registrada com sucesso!",
-      description: `Valor da venda: R$ ${valorVenda}`,
+      description: `Valor da venda: ${formatCurrency(valorVenda)}`,
     });
 
     setShowVendaDialog(false);
