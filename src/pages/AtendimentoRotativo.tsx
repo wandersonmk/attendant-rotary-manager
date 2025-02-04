@@ -94,8 +94,20 @@ const AtendimentoRotativo = () => {
 
   const handleEncerrarExpediente = (id: number) => {
     const vendedor = vendedores.find(v => v.id === id);
-    setVendedorFinalizando(id);
-    setShowVendaDialog(true);
+    
+    setVendedores((prev) =>
+      prev.map((v) => {
+        if (v.id === id) {
+          return { ...v, status: "encerrado", posicao: 0 };
+        }
+        return v;
+      })
+    );
+
+    toast({
+      title: "Expediente encerrado",
+      description: "Até a próxima!",
+    });
   };
 
   const handleConfirmarVenda = () => {
