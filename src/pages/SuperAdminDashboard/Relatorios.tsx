@@ -60,13 +60,8 @@ const Relatorios = () => {
           lojas!inner (
             id,
             nome
-          ),
-          vendedores!inner (
-            id,
-            ativo
           )
-        `)
-        .neq('lojas.nome', 'Administrador');
+        `);
 
       // Apply store filter if selected
       if (selectedLoja !== "Todas") {
@@ -83,10 +78,17 @@ const Relatorios = () => {
         const totalVendas = atendimentos.reduce((acc, curr) => 
           curr.venda_efetuada ? acc + Number(curr.valor_venda || 0) : acc, 0);
 
-        // Count active sellers
-        const vendedoresAtivos = new Set(
-          atendimentos.filter(a => a.vendedores.ativo).map(a => a.vendedores.id)
-        ).size;
+        // Count active sellers for the selected store(s)
+        const { count: vendedoresAtivos } = await supabase
+          .from('vendedores')
+          .select('*', { count: 'exact', head: true })
+          .eq('ativo', true)
+          .in(
+            'loja_id',
+            selectedLoja === "Todas"
+              ? lojas.map(l => l.id)
+              : [lojas.find(l => l.nome === selectedLoja)?.id].filter(Boolean)
+          );
 
         // Calculate average sale value
         const vendasEfetuadas = atendimentos.filter(a => a.venda_efetuada && a.valor_venda);
@@ -101,14 +103,16 @@ const Relatorios = () => {
 
         setMetricas({
           vendasTotais: totalVendas,
-          vendedoresAtivos,
+          vendedoresAtivos: vendedoresAtivos || 0,
           mediaVenda,
           taxaConversao
         });
       }
     };
 
-    fetchMetricas();
+    if (lojas.length > 0) {
+      fetchMetricas();
+    }
   }, [selectedLoja, lojas]);
 
   const exportToPDF = () => {
