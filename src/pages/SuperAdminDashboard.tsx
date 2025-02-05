@@ -26,10 +26,54 @@ interface LojaRanking {
   valor: number;
 }
 
+interface DashboardMetrics {
+  totalVendas: number;
+  totalLojas: number;
+  totalGerentes: number;
+  mediaVendas: number;
+}
+
 const SuperAdminDashboard = () => {
   const [lojasRanking, setLojasRanking] = useState<LojaRanking[]>([])
+  const [metrics, setMetrics] = useState<DashboardMetrics>({
+    totalVendas: 0,
+    totalLojas: 0,
+    totalGerentes: 0,
+    mediaVendas: 0,
+  })
 
   useEffect(() => {
+    const fetchDashboardData = async () => {
+      // Fetch total sales from all stores
+      const { data: salesData } = await supabase
+        .from('atendimentos')
+        .select('valor_venda')
+        .eq('venda_efetuada', true)
+        .not('valor_venda', 'is', null)
+
+      // Fetch total number of stores
+      const { count: totalLojas } = await supabase
+        .from('lojas')
+        .select('*', { count: 'exact', head: true })
+
+      // Fetch total number of managers
+      const { count: totalGerentes } = await supabase
+        .from('usuarios')
+        .select('*', { count: 'exact', head: true })
+        .eq('tipo', 'gerente')
+
+      // Calculate total sales and average per store
+      const totalVendas = salesData?.reduce((acc, curr) => acc + Number(curr.valor_venda || 0), 0) || 0
+      const mediaVendas = totalLojas ? totalVendas / totalLojas : 0
+
+      setMetrics({
+        totalVendas,
+        totalLojas: totalLojas || 0,
+        totalGerentes: totalGerentes || 0,
+        mediaVendas,
+      })
+    }
+
     const fetchLojasRanking = async () => {
       const { data: lojas } = await supabase
         .from('lojas')
@@ -60,12 +104,12 @@ const SuperAdminDashboard = () => {
           }
         })
 
-        // Ordenar por valor total de vendas
         const lojasOrdenadas = lojasProcessadas.sort((a, b) => b.valor - a.valor)
         setLojasRanking(lojasOrdenadas)
       }
     }
 
+    fetchDashboardData()
     fetchLojasRanking()
   }, [])
 
@@ -114,7 +158,9 @@ const SuperAdminDashboard = () => {
                 <div className="flex justify-between items-start">
                   <div>
                     <p className="text-sm font-medium opacity-80">Vendas Totais (Rede)</p>
-                    <p className="text-2xl font-bold mt-2">R$ 452.318,89</p>
+                    <p className="text-2xl font-bold mt-2">
+                      R$ {metrics.totalVendas.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                    </p>
                   </div>
                   <div className="bg-primary-foreground/20 p-3 rounded-lg">
                     <DollarSign className="h-5 w-5" />
@@ -132,7 +178,7 @@ const SuperAdminDashboard = () => {
                 <div className="flex justify-between items-start">
                   <div>
                     <p className="text-sm font-medium text-muted-foreground">Total de Lojas</p>
-                    <p className="text-2xl font-bold mt-2">32</p>
+                    <p className="text-2xl font-bold mt-2">{metrics.totalLojas}</p>
                   </div>
                   <div className="bg-primary/10 p-3 rounded-lg">
                     <Building2 className="h-5 w-5 text-primary" />
@@ -150,7 +196,7 @@ const SuperAdminDashboard = () => {
                 <div className="flex justify-between items-start">
                   <div>
                     <p className="text-sm font-medium text-muted-foreground">Total de Gerentes</p>
-                    <p className="text-2xl font-bold mt-2">48</p>
+                    <p className="text-2xl font-bold mt-2">{metrics.totalGerentes}</p>
                   </div>
                   <div className="bg-primary/10 p-3 rounded-lg">
                     <Users className="h-5 w-5 text-primary" />
@@ -168,7 +214,9 @@ const SuperAdminDashboard = () => {
                 <div className="flex justify-between items-start">
                   <div>
                     <p className="text-sm font-medium text-muted-foreground">Média por Loja</p>
-                    <p className="text-2xl font-bold mt-2">R$ 14.135,00</p>
+                    <p className="text-2xl font-bold mt-2">
+                      R$ {metrics.mediaVendas.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                    </p>
                   </div>
                   <div className="bg-primary/10 p-3 rounded-lg">
                     <TrendingUp className="h-5 w-5 text-primary" />
