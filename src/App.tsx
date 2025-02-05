@@ -13,6 +13,7 @@ import Vendedores from "./pages/Vendedores"
 import Relatorios from "./pages/Relatorios"
 import Configuracoes from "./pages/Configuracoes"
 import Gerentes from "./pages/Gerentes"
+import Lojas from "./pages/Lojas"
 
 const queryClient = new QueryClient()
 
@@ -28,7 +29,7 @@ const App = () => (
               <Route path="/" element={<Login />} />
               <Route path="/super-admin" element={<SuperAdminDashboard />} />
               <Route path="/super-admin/gerentes" element={<Gerentes />} />
-              <Route path="/super-admin/lojas" element={<NotFound />} />
+              <Route path="/super-admin/lojas" element={<Lojas />} />
               <Route path="/super-admin/relatorios" element={<Relatorios />} />
               <Route path="/super-admin/vendedores" element={<Vendedores />} />
               <Route path="/super-admin/configuracoes" element={<Configuracoes />} />
