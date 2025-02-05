@@ -1,10 +1,11 @@
 import {
+  LayoutDashboard,
   Users,
+  Store,
+  FileText,
   Settings,
   LogOut,
-  FileText,
-  LayoutDashboard,
-  Navigation2,
+  Building2,
 } from "lucide-react"
 import {
   Sidebar,
@@ -22,27 +23,32 @@ const primaryMenuItems = [
   {
     title: "Dashboard",
     icon: LayoutDashboard,
-    url: "/manager",
+    url: "/super-admin",
   },
   {
-    title: "Atendimento Rotativo",
-    icon: Navigation2,
-    url: "/atendimento",
+    title: "Gerentes",
+    icon: Building2,
+    url: "/super-admin/gerentes",
   },
   {
-    title: "Vendedores",
-    icon: Users,
-    url: "/manager/vendedores",
+    title: "Lojas",
+    icon: Store,
+    url: "/super-admin/lojas",
   },
   {
     title: "Relatórios",
     icon: FileText,
-    url: "/manager/relatorios",
+    url: "/super-admin/relatorios",
+  },
+  {
+    title: "Vendedores",
+    icon: Users,
+    url: "/super-admin/vendedores",
   },
   {
     title: "Configurações",
     icon: Settings,
-    url: "/manager/configuracoes",
+    url: "/super-admin/configuracoes",
   },
 ]
 
