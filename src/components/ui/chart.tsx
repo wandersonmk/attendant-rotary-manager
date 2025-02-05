@@ -353,6 +353,138 @@ function getPayloadConfigFromPayload(
     : config[key as keyof typeof config]
 }
 
+const LineChart = React.forwardRef<
+  HTMLDivElement,
+  React.ComponentProps<"div"> & {
+    data: Array<{ name: string; value: number }>
+  }
+>(({ data, className, ...props }, ref) => (
+  <ChartContainer
+    ref={ref}
+    className={cn("", className)}
+    config={{
+      line: {
+        theme: {
+          light: "hsl(var(--primary))",
+          dark: "hsl(var(--primary))",
+        },
+      },
+    }}
+    {...props}
+  >
+    <RechartsPrimitive.LineChart data={data}>
+      <RechartsPrimitive.XAxis
+        dataKey="name"
+        stroke="#888888"
+        fontSize={12}
+        tickLine={false}
+        axisLine={false}
+      />
+      <RechartsPrimitive.YAxis
+        stroke="#888888"
+        fontSize={12}
+        tickLine={false}
+        axisLine={false}
+        tickFormatter={(value) => `${value}`}
+      />
+      <RechartsPrimitive.Line
+        type="monotone"
+        dataKey="value"
+        stroke="var(--color-line)"
+        strokeWidth={2}
+        dot={false}
+      />
+      <RechartsPrimitive.Tooltip
+        content={({ active, payload }) => {
+          if (active && payload && payload.length) {
+            return (
+              <div className="rounded-lg border bg-background p-2 shadow-sm">
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="flex flex-col">
+                    <span className="text-[0.70rem] uppercase text-muted-foreground">
+                      Value
+                    </span>
+                    <span className="font-bold text-muted-foreground">
+                      {payload[0].value}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )
+          }
+          return null
+        }}
+      />
+    </RechartsPrimitive.LineChart>
+  </ChartContainer>
+))
+LineChart.displayName = "LineChart"
+
+const BarChart = React.forwardRef<
+  HTMLDivElement,
+  React.ComponentProps<"div"> & {
+    data: Array<{ name: string; value: number }>
+  }
+>(({ data, className, ...props }, ref) => (
+  <ChartContainer
+    ref={ref}
+    className={cn("", className)}
+    config={{
+      bar: {
+        theme: {
+          light: "hsl(var(--primary))",
+          dark: "hsl(var(--primary))",
+        },
+      },
+    }}
+    {...props}
+  >
+    <RechartsPrimitive.BarChart data={data}>
+      <RechartsPrimitive.XAxis
+        dataKey="name"
+        stroke="#888888"
+        fontSize={12}
+        tickLine={false}
+        axisLine={false}
+      />
+      <RechartsPrimitive.YAxis
+        stroke="#888888"
+        fontSize={12}
+        tickLine={false}
+        axisLine={false}
+        tickFormatter={(value) => `${value}`}
+      />
+      <RechartsPrimitive.Bar
+        dataKey="value"
+        fill="var(--color-bar)"
+        radius={[4, 4, 0, 0]}
+      />
+      <RechartsPrimitive.Tooltip
+        content={({ active, payload }) => {
+          if (active && payload && payload.length) {
+            return (
+              <div className="rounded-lg border bg-background p-2 shadow-sm">
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="flex flex-col">
+                    <span className="text-[0.70rem] uppercase text-muted-foreground">
+                      Value
+                    </span>
+                    <span className="font-bold text-muted-foreground">
+                      {payload[0].value}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )
+          }
+          return null
+        }}
+      />
+    </RechartsPrimitive.BarChart>
+  </ChartContainer>
+))
+BarChart.displayName = "BarChart"
+
 export {
   ChartContainer,
   ChartTooltip,
@@ -360,4 +492,6 @@ export {
   ChartLegend,
   ChartLegendContent,
   ChartStyle,
+  LineChart,
+  BarChart,
 }
