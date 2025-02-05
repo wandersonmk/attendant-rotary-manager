@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { FileSpreadsheet, FileText, ChevronDown } from "lucide-react"
 import { LojaRanking } from "@/components/LojaRanking"
-import { MetricasLoja } from "@/components/MetricasLoja"
 import { toast } from "@/components/ui/use-toast"
 import {
   DropdownMenu,
@@ -39,12 +38,11 @@ const Relatorios = () => {
       const { data } = await supabase
         .from('lojas')
         .select('id, nome')
+        .neq('nome', 'Administrador')
         .order('nome');
       
       if (data) {
-        // Filter out any non-store entries if they exist
-        const storeOnly = data.filter(loja => loja.nome !== 'Administrador');
-        setLojas(storeOnly);
+        setLojas(data);
       }
     };
 
@@ -67,7 +65,8 @@ const Relatorios = () => {
             id,
             ativo
           )
-        `);
+        `)
+        .neq('lojas.nome', 'Administrador');
 
       // Apply store filter if selected
       if (selectedLoja !== "Todas") {
@@ -90,7 +89,7 @@ const Relatorios = () => {
         ).size;
 
         // Calculate average sale value
-        const vendasEfetuadas = atendimentos.filter(a => a.venda_efetuada);
+        const vendasEfetuadas = atendimentos.filter(a => a.venda_efetuada && a.valor_venda);
         const mediaVenda = vendasEfetuadas.length > 0
           ? totalVendas / vendasEfetuadas.length
           : 0;
@@ -228,7 +227,10 @@ const Relatorios = () => {
                       </CardHeader>
                       <CardContent>
                         <div className="text-2xl font-bold">
-                          R$ {metricas.vendasTotais.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                          {metricas.vendasTotais.toLocaleString('pt-BR', {
+                            style: 'currency',
+                            currency: 'BRL'
+                          })}
                         </div>
                       </CardContent>
                     </Card>
@@ -252,7 +254,10 @@ const Relatorios = () => {
                       </CardHeader>
                       <CardContent>
                         <div className="text-2xl font-bold">
-                          R$ {metricas.mediaVenda.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                          {metricas.mediaVenda.toLocaleString('pt-BR', {
+                            style: 'currency',
+                            currency: 'BRL'
+                          })}
                         </div>
                       </CardContent>
                     </Card>
@@ -264,7 +269,7 @@ const Relatorios = () => {
                       </CardHeader>
                       <CardContent>
                         <div className="text-2xl font-bold">
-                          {metricas.taxaConversao.toFixed(2)}%
+                          {metricas.taxaConversao.toFixed(1)}%
                         </div>
                       </CardContent>
                     </Card>
