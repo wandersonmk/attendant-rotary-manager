@@ -167,32 +167,27 @@ const Relatorios = () => {
                 Relatórios
               </h1>
               <div className="flex gap-4 items-center">
-                <div className="flex flex-col items-end gap-1">
-                  <span className="text-sm text-gray-600 dark:text-gray-400">
-                    Filtrar por Loja:
-                  </span>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="outline" className="flex items-center gap-2 bg-white dark:bg-gray-800">
-                        {selectedLoja}
-                        <ChevronDown className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent className="bg-white dark:bg-gray-800">
-                      <DropdownMenuItem onClick={() => setSelectedLoja("Todas")}>
-                        Todas
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" className="flex items-center gap-2 bg-white dark:bg-gray-800">
+                      {selectedLoja}
+                      <ChevronDown className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="bg-white dark:bg-gray-800">
+                    <DropdownMenuItem onClick={() => setSelectedLoja("Todas")}>
+                      Todas
+                    </DropdownMenuItem>
+                    {lojas.map((loja) => (
+                      <DropdownMenuItem
+                        key={loja.id}
+                        onClick={() => setSelectedLoja(loja.nome)}
+                      >
+                        {loja.nome}
                       </DropdownMenuItem>
-                      {lojas.map((loja) => (
-                        <DropdownMenuItem
-                          key={loja.id}
-                          onClick={() => setSelectedLoja(loja.nome)}
-                        >
-                          {loja.nome}
-                        </DropdownMenuItem>
-                      ))}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
                 <Button
                   variant="outline"
                   className="flex items-center gap-2"
