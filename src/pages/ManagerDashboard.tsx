@@ -8,18 +8,53 @@ import { DashboardSidebar } from "@/components/DashboardSidebar"
 import { Input } from "@/components/ui/input"
 import { VendedorRanking } from "@/components/VendedorRanking"
 import { MetricasLoja } from "@/components/MetricasLoja"
-
-const vendasSemanais = [
-  { dia: "Jan 5", vendas: 4200, lucro: 3800 },
-  { dia: "Jan 6", vendas: 3800, lucro: 4200 },
-  { dia: "Jan 7", vendas: 5100, lucro: 4800 },
-  { dia: "Jan 8", vendas: 4700, lucro: 5200 },
-  { dia: "Jan 9", vendas: 6200, lucro: 5800 },
-  { dia: "Jan 10", vendas: 5400, lucro: 5100 },
-  { dia: "Jan 11", vendas: 5800, lucro: 5400 },
-];
+import { useEffect, useState } from "react"
+import { supabase } from "@/integrations/supabase/client"
 
 const ManagerDashboard = () => {
+  const [revenueData, setRevenueData] = useState([]);
+
+  useEffect(() => {
+    const fetchRevenueData = async () => {
+      // Get current user and their store
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (user) {
+        const { data: userData } = await supabase
+          .from('usuarios')
+          .select('loja_id')
+          .eq('user_id', user.id)
+          .maybeSingle();
+
+        if (userData?.loja_id) {
+          // Get last 7 days of metrics
+          const endDate = new Date();
+          const startDate = new Date();
+          startDate.setDate(startDate.getDate() - 6); // Last 7 days
+
+          const { data: metricsData } = await supabase
+            .from('metricas')
+            .select('data, total_vendas')
+            .eq('loja_id', userData.loja_id)
+            .gte('data', startDate.toISOString().split('T')[0])
+            .lte('data', endDate.toISOString().split('T')[0])
+            .order('data', { ascending: true });
+
+          if (metricsData) {
+            const formattedData = metricsData.map(metric => ({
+              dia: new Date(metric.data).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' }),
+              vendas: Number(metric.total_vendas || 0),
+              lucro: Number(metric.total_vendas * 0.8 || 0) // Assuming 80% of sales is profit for demonstration
+            }));
+            setRevenueData(formattedData);
+          }
+        }
+      }
+    };
+
+    fetchRevenueData();
+  }, []);
+
   return (
     <SidebarProvider defaultOpen>
       <div className="flex min-h-screen w-full bg-[#F8FAFC] dark:bg-[#1A1F2C]">
@@ -71,8 +106,8 @@ const ManagerDashboard = () => {
                       Análise de Receita
                     </CardTitle>
                     <div className="flex gap-2">
-                      <Button variant="outline" size="sm">8 Jan</Button>
-                      <Button variant="outline" size="sm">8 Feb</Button>
+                      <Button variant="outline" size="sm">7D</Button>
+                      <Button variant="outline" size="sm">30D</Button>
                     </div>
                   </div>
                 </CardHeader>
@@ -94,7 +129,7 @@ const ManagerDashboard = () => {
                         },
                       }}
                     >
-                      <LineChart data={vendasSemanais}>
+                      <LineChart data={revenueData}>
                         <CartesianGrid strokeDasharray="3 3" />
                         <XAxis dataKey="dia" />
                         <YAxis />
