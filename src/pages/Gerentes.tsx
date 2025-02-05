@@ -103,7 +103,7 @@ const Gerentes = () => {
         // First check if user exists in usuarios table
         const { data: existingUser, error: queryError } = await supabase
           .from("usuarios")
-          .select("id")
+          .select("email")
           .eq("email", values.email)
           .maybeSingle()
 
@@ -157,14 +157,12 @@ const Gerentes = () => {
 
         if (userError) {
           console.error("Error creating usuario:", userError)
-          // Since we can't delete the auth user from client side,
-          // we'll just show an error message
-          throw new Error("Erro ao criar usuário no sistema. Por favor, contate o suporte.")
+          throw new Error("Erro ao criar usuário no sistema")
         }
 
         return authData
       } catch (error: any) {
-        console.error("Error creating manager:", error)
+        console.error("Error in createManager:", error)
         throw new Error(error.message || "Erro ao criar gerente")
       }
     },
