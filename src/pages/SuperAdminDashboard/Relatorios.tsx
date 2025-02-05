@@ -51,116 +51,107 @@ const Relatorios = () => {
 
   useEffect(() => {
     const fetchMetricas = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      if (user) {
-        const { data: userData } = await supabase
-          .from('usuarios')
-          .select('loja_id')
-          .eq('user_id', user.id)
-          .maybeSingle();
+      let query = supabase
+        .from('atendimentos')
+        .select(`
+          valor_venda,
+          venda_efetuada,
+          loja_id,
+          lojas!inner (
+            id,
+            nome
+          ),
+          vendedores!inner (
+            id,
+            ativo
+          )
+        `);
 
-        if (userData?.loja_id) {
-          // Get total sales
-          const { data: salesData } = await supabase
-            .from('metricas')
-            .select('total_vendas')
-            .eq('loja_id', userData.loja_id)
-            .maybeSingle();
-
-          // Get active sellers count
-          const { count: activeVendedores } = await supabase
-            .from('vendedores')
-            .select('*', { count: 'exact', head: true })
-            .eq('loja_id', userData.loja_id)
-            .eq('ativo', true);
-
-          // Get completed sales for average calculation
-          const { data: completedSales } = await supabase
-            .from('atendimentos')
-            .select('valor_venda')
-            .eq('loja_id', userData.loja_id)
-            .eq('venda_efetuada', true)
-            .not('valor_venda', 'is', null);
-
-          // Calculate average sale value
-          const totalSalesValue = completedSales?.reduce((acc, curr) => acc + Number(curr.valor_venda || 0), 0) || 0;
-          const averageSale = completedSales?.length ? totalSalesValue / completedSales.length : 0;
-
-          // Calculate conversion rate
-          const { count: totalAtendimentos } = await supabase
-            .from('atendimentos')
-            .select('*', { count: 'exact', head: true })
-            .eq('loja_id', userData.loja_id);
-
-          const { count: successfulSales } = await supabase
-            .from('atendimentos')
-            .select('*', { count: 'exact', head: true })
-            .eq('loja_id', userData.loja_id)
-            .eq('venda_efetuada', true);
-
-          const conversionRate = totalAtendimentos ? (successfulSales / totalAtendimentos) * 100 : 0;
-
-          setMetricas({
-            vendasTotais: Number(salesData?.total_vendas || 0),
-            vendedoresAtivos: activeVendedores || 0,
-            mediaVenda: averageSale,
-            taxaConversao: conversionRate
-          });
+      // Apply store filter if selected
+      if (selectedLoja !== "Todas") {
+        const loja = lojas.find(l => l.nome === selectedLoja);
+        if (loja) {
+          query = query.eq('loja_id', loja.id);
         }
+      }
+
+      const { data: atendimentos } = await query;
+
+      if (atendimentos) {
+        // Calculate total sales value
+        const totalVendas = atendimentos.reduce((acc, curr) => 
+          curr.venda_efetuada ? acc + Number(curr.valor_venda || 0) : acc, 0);
+
+        // Count active sellers
+        const vendedoresAtivos = new Set(
+          atendimentos.filter(a => a.vendedores.ativo).map(a => a.vendedores.id)
+        ).size;
+
+        // Calculate average sale value
+        const vendasEfetuadas = atendimentos.filter(a => a.venda_efetuada);
+        const mediaVenda = vendasEfetuadas.length > 0
+          ? totalVendas / vendasEfetuadas.length
+          : 0;
+
+        // Calculate conversion rate
+        const taxaConversao = atendimentos.length > 0
+          ? (vendasEfetuadas.length / atendimentos.length) * 100
+          : 0;
+
+        setMetricas({
+          vendasTotais: totalVendas,
+          vendedoresAtivos,
+          mediaVenda,
+          taxaConversao
+        });
       }
     };
 
     fetchMetricas();
-  }, []);
+  }, [selectedLoja, lojas]);
 
   const exportToPDF = () => {
     const doc = new jsPDF();
     
-    // Título
+    // Title
     doc.setFontSize(20);
-    doc.text("Relatório de Vendas", 20, 20);
+    doc.text(`Relatório de Vendas ${selectedLoja !== "Todas" ? `- ${selectedLoja}` : ""}`, 20, 20);
     
-    // Métricas
+    // Metrics
     doc.setFontSize(14);
     doc.text("Métricas Gerais", 20, 40);
     doc.setFontSize(12);
-    doc.text(`Vendas Totais: R$ ${metricas.vendasTotais.toLocaleString()}`, 20, 50);
+    doc.text(`Vendas Totais: R$ ${metricas.vendasTotais.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`, 20, 50);
     doc.text(`Vendedores Ativos: ${metricas.vendedoresAtivos}`, 20, 60);
-    doc.text(`Média por Venda: R$ ${metricas.mediaVenda.toLocaleString()}`, 20, 70);
-    doc.text(`Taxa de Conversão: ${metricas.taxaConversao}%`, 20, 80);
+    doc.text(`Média por Venda: R$ ${metricas.mediaVenda.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`, 20, 70);
+    doc.text(`Taxa de Conversão: ${metricas.taxaConversao.toFixed(2)}%`, 20, 80);
     
-    // Ranking
-    doc.setFontSize(14);
-    doc.text("Ranking de Vendedores", 20, 100);
-    doc.setFontSize(12);
-    
-    doc.save("relatorio-vendas.pdf");
+    doc.save(`relatorio-vendas${selectedLoja !== "Todas" ? `-${selectedLoja.toLowerCase()}` : ""}.pdf`);
     toast({
       title: "PDF exportado com sucesso!",
-      description: "O relatório foi salvo como 'relatorio-vendas.pdf'",
+      description: "O relatório foi salvo como PDF",
     });
   };
 
   const exportToExcel = () => {
     const workbook = XLSX.utils.book_new();
     
-    // Métricas
+    // Metrics
     const metricasData = [
-      ["Métricas Gerais"],
-      ["Vendas Totais", `R$ ${metricas.vendasTotais.toLocaleString()}`],
+      [`Métricas Gerais ${selectedLoja !== "Todas" ? `- ${selectedLoja}` : ""}`],
+      ["Vendas Totais", `R$ ${metricas.vendasTotais.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`],
       ["Vendedores Ativos", metricas.vendedoresAtivos],
-      ["Média por Venda", `R$ ${metricas.mediaVenda.toLocaleString()}`],
-      ["Taxa de Conversão", `${metricas.taxaConversao}%`],
+      ["Média por Venda", `R$ ${metricas.mediaVenda.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`],
+      ["Taxa de Conversão", `${metricas.taxaConversao.toFixed(2)}%`],
     ];
     
     const metricasSheet = XLSX.utils.aoa_to_sheet(metricasData);
     XLSX.utils.book_append_sheet(workbook, metricasSheet, "Métricas");
     
-    XLSX.writeFile(workbook, "relatorio-vendas.xlsx");
+    XLSX.writeFile(workbook, `relatorio-vendas${selectedLoja !== "Todas" ? `-${selectedLoja.toLowerCase()}` : ""}.xlsx`);
     toast({
       title: "Excel exportado com sucesso!",
-      description: "O relatório foi salvo como 'relatorio-vendas.xlsx'",
+      description: "O relatório foi salvo como Excel",
     });
   };
 
@@ -226,7 +217,56 @@ const Relatorios = () => {
                   <CardTitle>Métricas da Loja</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <MetricasLoja />
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <Card>
+                      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">
+                          Vendas Totais
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="text-2xl font-bold">
+                          R$ {metricas.vendasTotais.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                        </div>
+                      </CardContent>
+                    </Card>
+                    <Card>
+                      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">
+                          Vendedores Ativos
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="text-2xl font-bold">
+                          {metricas.vendedoresAtivos}
+                        </div>
+                      </CardContent>
+                    </Card>
+                    <Card>
+                      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">
+                          Média por Venda
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="text-2xl font-bold">
+                          R$ {metricas.mediaVenda.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                        </div>
+                      </CardContent>
+                    </Card>
+                    <Card>
+                      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">
+                          Taxa de Conversão
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="text-2xl font-bold">
+                          {metricas.taxaConversao.toFixed(2)}%
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
                 </CardContent>
               </Card>
 
