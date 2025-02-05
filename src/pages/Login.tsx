@@ -33,10 +33,12 @@ const Login = () => {
       if (profile?.tipo === 'super_admin') {
         navigate('/super-admin')
       } else if (profile?.tipo === 'gerente') {
-        // Redirect manager to their specific store's dashboard
         navigate('/manager')
-      } else {
+      } else if (profile?.tipo === 'vendedor') {
         navigate('/atendimento')
+      } else {
+        // Fallback route if tipo is not recognized
+        navigate('/manager')
       }
 
       toast({
