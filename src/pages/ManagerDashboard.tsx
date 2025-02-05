@@ -19,14 +19,6 @@ const vendasSemanais = [
   { dia: "Jan 11", vendas: 5800, lucro: 5400 },
 ];
 
-const vendedoresRanking = [
-  { id: 1, nome: "Carlos Silva", vendas: 45, valor: 15000 },
-  { id: 2, nome: "Ana Oliveira", vendas: 38, valor: 12500 },
-  { id: 3, nome: "João Santos", vendas: 35, valor: 11800 },
-  { id: 4, nome: "Maria Lima", vendas: 32, valor: 10500 },
-  { id: 5, nome: "Pedro Costa", vendas: 30, valor: 9800 },
-];
-
 const ManagerDashboard = () => {
   return (
     <SidebarProvider defaultOpen>
@@ -128,7 +120,7 @@ const ManagerDashboard = () => {
               </Card>
 
               {/* Ranking de Vendedores */}
-              <VendedorRanking data={vendedoresRanking} />
+              <VendedorRanking />
             </div>
           </div>
         </main>

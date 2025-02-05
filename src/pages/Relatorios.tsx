@@ -16,27 +16,8 @@ import jsPDF from 'jspdf'
 import * as XLSX from 'xlsx'
 import { useState } from "react"
 
-const vendedoresRanking = [
-  { id: 1, nome: "Carlos Silva", vendas: 45, valor: 15000 },
-  { id: 2, nome: "Ana Oliveira", vendas: 38, valor: 12500 },
-  { id: 3, nome: "João Santos", vendas: 35, valor: 11800 },
-  { id: 4, nome: "Maria Lima", vendas: 32, valor: 10500 },
-  { id: 5, nome: "Pedro Costa", vendas: 30, valor: 9800 },
-];
-
-const metricas = {
-  vendasTotais: 45231.89,
-  vendedoresAtivos: 12,
-  mediaVenda: 850.00,
-  taxaConversao: 68,
-}
-
 const Relatorios = () => {
   const [selectedVendedor, setSelectedVendedor] = useState<string>("Todos");
-
-  const filteredRanking = selectedVendedor === "Todos" 
-    ? vendedoresRanking 
-    : vendedoresRanking.filter(v => v.nome === selectedVendedor);
 
   const exportToPDF = () => {
     const doc = new jsPDF()
@@ -58,13 +39,6 @@ const Relatorios = () => {
     doc.setFontSize(14)
     doc.text("Ranking de Vendedores", 20, 100)
     doc.setFontSize(12)
-    filteredRanking.forEach((vendedor, index) => {
-      doc.text(
-        `${index + 1}. ${vendedor.nome} - ${vendedor.vendas} vendas - R$ ${vendedor.valor.toLocaleString()}`,
-        20,
-        120 + (index * 10)
-      )
-    })
     
     doc.save("relatorio-vendas.pdf")
     toast({
@@ -87,20 +61,6 @@ const Relatorios = () => {
     
     const metricasSheet = XLSX.utils.aoa_to_sheet(metricasData)
     XLSX.utils.book_append_sheet(workbook, metricasSheet, "Métricas")
-    
-    // Ranking
-    const rankingData = [
-      ["Posição", "Nome", "Vendas", "Valor Total"],
-      ...filteredRanking.map((v, i) => [
-        i + 1,
-        v.nome,
-        v.vendas,
-        `R$ ${v.valor.toLocaleString()}`,
-      ]),
-    ]
-    
-    const rankingSheet = XLSX.utils.aoa_to_sheet(rankingData)
-    XLSX.utils.book_append_sheet(workbook, rankingSheet, "Ranking")
     
     XLSX.writeFile(workbook, "relatorio-vendas.xlsx")
     toast({
@@ -135,14 +95,6 @@ const Relatorios = () => {
                       <DropdownMenuItem onClick={() => setSelectedVendedor("Todos")}>
                         Todos
                       </DropdownMenuItem>
-                      {vendedoresRanking.map((vendedor) => (
-                        <DropdownMenuItem
-                          key={vendedor.id}
-                          onClick={() => setSelectedVendedor(vendedor.nome)}
-                        >
-                          {vendedor.nome}
-                        </DropdownMenuItem>
-                      ))}
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </div>
@@ -180,7 +132,7 @@ const Relatorios = () => {
                   <CardTitle>Ranking de Vendedores</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <VendedorRanking data={filteredRanking} />
+                  <VendedorRanking />
                 </CardContent>
               </Card>
             </div>
