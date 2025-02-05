@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Users, TrendingUp, Timer, Search, Bell, Building2, DollarSign } from "lucide-react"
@@ -6,6 +7,7 @@ import { ChartContainer } from "@/components/ui/chart"
 import { DashboardSidebar } from "@/components/DashboardSidebar"
 import { Input } from "@/components/ui/input"
 import { VendedorRanking } from "@/components/VendedorRanking"
+import { supabase } from "@/integrations/supabase/client"
 
 const vendasSemanais = [
   { dia: "Jan 5", vendas: 42000, lucro: 38000 },
@@ -17,15 +19,56 @@ const vendasSemanais = [
   { dia: "Jan 11", vendas: 58000, lucro: 54000 },
 ];
 
-const lojasRanking = [
-  { id: 1, nome: "Loja Centro", vendas: 145, valor: 150000 },
-  { id: 2, nome: "Loja Shopping", vendas: 138, valor: 125000 },
-  { id: 3, nome: "Loja Norte", vendas: 135, valor: 118000 },
-  { id: 4, nome: "Loja Sul", vendas: 132, valor: 105000 },
-  { id: 5, nome: "Loja Oeste", vendas: 130, valor: 98000 },
-];
+interface LojaRanking {
+  id: number;
+  nome: string;
+  vendas: number;
+  valor: number;
+}
 
 const SuperAdminDashboard = () => {
+  const [lojasRanking, setLojasRanking] = useState<LojaRanking[]>([])
+
+  useEffect(() => {
+    const fetchLojasRanking = async () => {
+      const { data: lojas } = await supabase
+        .from('lojas')
+        .select(`
+          id,
+          nome,
+          atendimentos (
+            valor_venda,
+            venda_efetuada
+          )
+        `)
+
+      if (lojas) {
+        const lojasProcessadas = lojas.map(loja => {
+          const vendasEfetuadas = loja.atendimentos.filter(
+            (a: any) => a.venda_efetuada
+          ).length
+          const valorTotal = loja.atendimentos.reduce(
+            (acc: number, curr: any) => acc + Number(curr.valor_venda || 0),
+            0
+          )
+
+          return {
+            id: loja.id,
+            nome: loja.nome,
+            vendas: vendasEfetuadas,
+            valor: valorTotal
+          }
+        })
+
+        // Ordenar por valor total de vendas
+        const lojasOrdenadas = lojasProcessadas.sort((a, b) => b.valor - a.valor)
+        setLojasRanking(lojasOrdenadas)
+      }
+    }
+
+    fetchLojasRanking()
+  }, [])
+
   return (
     <div className="flex min-h-screen w-full bg-[#F8FAFC] dark:bg-[#1A1F2C]">
       <DashboardSidebar />
@@ -204,7 +247,10 @@ const SuperAdminDashboard = () => {
               <CardContent>
                 <div className="space-y-4">
                   {lojasRanking.map((loja, index) => (
-                    <div key={loja.id} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
+                    <div
+                      key={loja.id}
+                      className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-900 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                    >
                       <div className="flex items-center gap-4">
                         <span className="text-lg font-semibold text-gray-500">#{index + 1}</span>
                         <div>
@@ -212,7 +258,9 @@ const SuperAdminDashboard = () => {
                           <p className="text-sm text-gray-500">{loja.vendas} vendas</p>
                         </div>
                       </div>
-                      <p className="font-semibold">R$ {loja.valor.toLocaleString()}</p>
+                      <p className="font-semibold">
+                        R$ {loja.valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                      </p>
                     </div>
                   ))}
                 </div>
