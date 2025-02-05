@@ -100,7 +100,18 @@ const Gerentes = () => {
   const createManager = useMutation({
     mutationFn: async (values: z.infer<typeof formSchema>) => {
       try {
-        // Primeiro, cria o usuário no auth
+        // First check if user exists
+        const { data: existingUser } = await supabase
+          .from("usuarios")
+          .select("id")
+          .eq("email", values.email)
+          .single()
+
+        if (existingUser) {
+          throw new Error("Este email já está cadastrado no sistema")
+        }
+
+        // Create auth user
         const { data: authData, error: authError } = await supabase.auth.signUp({
           email: values.email,
           password: values.senha,
@@ -120,7 +131,7 @@ const Gerentes = () => {
           throw authError
         }
 
-        // Agora vamos criar o registro na tabela usuarios
+        // Create usuarios record
         const { error: userError } = await supabase
           .from("usuarios")
           .insert([
@@ -138,9 +149,7 @@ const Gerentes = () => {
 
         return authData
       } catch (error: any) {
-        if (error.message === "Este email já está registrado no sistema") {
-          throw error
-        }
+        console.error("Error creating manager:", error)
         throw new Error(error.message || "Erro ao criar gerente")
       }
     },
