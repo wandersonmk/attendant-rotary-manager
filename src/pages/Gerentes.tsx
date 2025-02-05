@@ -6,7 +6,7 @@ import { Search, Plus, Edit2, Trash2 } from "lucide-react"
 import { DashboardSidebar } from "@/components/DashboardSidebar"
 import { useToast } from "@/hooks/use-toast"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
-import { supabase } from "@/integrations/supabase/client"
+import { supabase } from "@/lib/supabase"
 import {
   Dialog,
   DialogContent,
@@ -114,18 +114,6 @@ const Gerentes = () => {
 
         if (existingUser) {
           throw new Error("Este email já está cadastrado no sistema")
-        }
-
-        // Check if user exists in auth
-        const { data: authUser, error: authCheckError } = await supabase.auth.admin.getUserByEmail(values.email)
-        
-        if (authCheckError && authCheckError.message !== "User not found") {
-          console.error("Error checking auth user:", authCheckError)
-          throw new Error("Erro ao verificar usuário existente")
-        }
-
-        if (authUser) {
-          throw new Error("Este email já está registrado no sistema")
         }
 
         // Create auth user
