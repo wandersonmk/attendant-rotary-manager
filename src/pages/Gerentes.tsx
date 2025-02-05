@@ -13,6 +13,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogDescription,
 } from "@/components/ui/dialog"
 import {
   Form,
@@ -71,48 +72,53 @@ const Gerentes = () => {
 
   const createManager = useMutation({
     mutationFn: async (values: z.infer<typeof formSchema>) => {
-      // Primeiro, cria o usuário no auth
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email: values.email,
-        password: values.senha,
-        options: {
-          data: {
-            nome: values.nome,
-            role: "gerente",
-          },
-        },
-      })
-
-      if (authError) throw authError
-
-      // Depois, insere os dados na tabela usuarios
-      const { error } = await supabase.from("usuarios").insert([
-        {
-          nome: values.nome,
+      try {
+        // Primeiro, cria o usuário no auth
+        const { data: authData, error: authError } = await supabase.auth.signUp({
           email: values.email,
-          senha: values.senha,
-          tipo: "gerente",
-          user_id: authData.user?.id,
-        },
-      ])
+          password: values.senha,
+          options: {
+            data: {
+              nome: values.nome,
+              role: "gerente",
+            },
+          },
+        })
 
-      if (error) throw error
+        if (authError) {
+          // Check for specific error types
+          if (authError.message === "User already registered") {
+            throw new Error("Este email já está registrado no sistema")
+          }
+          throw authError
+        }
+
+        // Se chegou aqui, o usuário foi criado com sucesso no auth
+        // O trigger handle_new_auth_user já vai criar o registro na tabela usuarios
+        return authData
+      } catch (error: any) {
+        // Properly handle and rethrow the error
+        if (error.message === "Este email já está registrado no sistema") {
+          throw error
+        }
+        throw new Error(error.message || "Erro ao criar gerente")
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["managers"] })
       toast({
+        variant: "success",
         title: "Gerente criado com sucesso!",
         description: "Um email será enviado com as instruções de acesso.",
       })
       setIsOpen(false)
       form.reset()
     },
-    onError: (error) => {
-      console.error("Error creating manager:", error)
+    onError: (error: Error) => {
       toast({
         variant: "destructive",
         title: "Erro ao criar gerente",
-        description: error.message || "Tente novamente mais tarde.",
+        description: error.message,
       })
     },
   })
@@ -180,6 +186,9 @@ const Gerentes = () => {
                 <DialogContent>
                   <DialogHeader>
                     <DialogTitle>Adicionar Novo Gerente</DialogTitle>
+                    <DialogDescription>
+                      Preencha os dados para criar um novo gerente
+                    </DialogDescription>
                   </DialogHeader>
                   <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
