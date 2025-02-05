@@ -61,6 +61,7 @@ export function DashboardSidebar() {
   const { toast } = useToast()
   const [storeName, setStoreName] = useState("")
   const [userName, setUserName] = useState("")
+  const [userType, setUserType] = useState("")
 
   useEffect(() => {
     const fetchUserInfo = async () => {
@@ -69,14 +70,15 @@ export function DashboardSidebar() {
       if (user) {
         const { data: userData } = await supabase
           .from('usuarios')
-          .select('nome, loja_id')
+          .select('nome, loja_id, tipo')
           .eq('user_id', user.id)
           .single()
 
         if (userData) {
           setUserName(userData.nome)
+          setUserType(userData.tipo)
           
-          if (userData.loja_id) {
+          if (userData.loja_id && userData.tipo !== 'super_admin' && userData.tipo !== 'admin') {
             const { data: storeData } = await supabase
               .from('lojas')
               .select('nome')
@@ -115,7 +117,9 @@ export function DashboardSidebar() {
     <Sidebar>
       <SidebarContent>
         <div className="p-4">
-          <h2 className="text-xl font-bold text-primary">{storeName}</h2>
+          <h2 className="text-xl font-bold text-primary">
+            {userType === 'super_admin' || userType === 'admin' ? 'Administrador' : storeName}
+          </h2>
         </div>
         <SidebarGroup>
           <SidebarGroupContent>
