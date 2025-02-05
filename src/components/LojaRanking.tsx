@@ -1,105 +1,116 @@
-import { useEffect, useState } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { supabase } from "@/integrations/supabase/client"
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
-interface Loja {
-  id: number;
-  nome: string;
-  vendas: number;
-  valor: number;
-}
-
-interface Props {
+interface LojaRankingProps {
   selectedLoja?: string;
 }
 
-export const LojaRanking = ({ selectedLoja }: Props) => {
-  const [lojas, setLojas] = useState<Loja[]>([])
+interface LojaData {
+  id: number;
+  nome: string;
+  total_vendas: number;
+  quantidade_vendas: number;
+}
+
+export const LojaRanking = ({ selectedLoja }: LojaRankingProps) => {
+  const [lojas, setLojas] = useState<LojaData[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchLojasRanking = async () => {
-      // Get all stores and their sales data
-      const { data: lojasData } = await supabase
-        .from('lojas')
-        .select(`
-          id,
-          nome,
-          atendimentos!inner (
-            valor_venda,
-            venda_efetuada
-          )
-        `)
+    const fetchLojas = async () => {
+      try {
+        // First, get all stores
+        const { data: lojasData, error: lojasError } = await supabase
+          .from('lojas')
+          .select('id, nome')
+          .neq('nome', 'Administrador')
+          .order('nome');
 
-      if (lojasData) {
-        // Calculate total sales and amount for each store
-        const lojasProcessadas = lojasData.map(loja => {
-          const vendasEfetuadas = loja.atendimentos.filter(
-            (a: any) => a.venda_efetuada
-          ).length
-          const valorTotal = loja.atendimentos.reduce(
-            (acc: number, curr: any) => acc + Number(curr.valor_venda || 0),
-            0
-          )
+        if (lojasError) throw lojasError;
 
+        // Then get sales data
+        const { data: vendasData, error: vendasError } = await supabase
+          .from('atendimentos')
+          .select('loja_id, valor_venda')
+          .eq('venda_efetuada', true)
+          .not('valor_venda', 'is', null);
+
+        if (vendasError) throw vendasError;
+
+        // Combine the data
+        const lojasCompletas = lojasData.map(loja => {
+          const vendasLoja = vendasData?.filter(venda => venda.loja_id === loja.id) || [];
+          const total_vendas = vendasLoja.reduce((sum, venda) => sum + Number(venda.valor_venda || 0), 0);
+          
           return {
             id: loja.id,
             nome: loja.nome,
-            vendas: vendasEfetuadas,
-            valor: valorTotal
-          }
-        })
+            total_vendas: total_vendas,
+            quantidade_vendas: vendasLoja.length
+          };
+        });
 
-        // Sort by total sales value
-        const lojasOrdenadas = lojasProcessadas.sort(
-          (a, b) => b.valor - a.valor
-        )
-
-        // Filter by selected store if one is selected
-        const lojasFiltradas = selectedLoja && selectedLoja !== "Todas"
-          ? lojasOrdenadas.filter(loja => loja.nome === selectedLoja)
-          : lojasOrdenadas
-
-        setLojas(lojasFiltradas)
+        // Sort by total sales (even if 0)
+        const lojasSorted = lojasCompletas.sort((a, b) => b.total_vendas - a.total_vendas);
+        setLojas(lojasSorted);
+      } catch (error) {
+        console.error('Erro ao carregar dados das lojas:', error);
+      } finally {
+        setLoading(false);
       }
-    }
+    };
 
-    fetchLojasRanking()
-  }, [selectedLoja])
+    fetchLojas();
+  }, [selectedLoja]);
+
+  if (loading) {
+    return <div className="flex justify-center p-4">Carregando ranking...</div>;
+  }
 
   return (
     <div className="space-y-4">
-      {lojas.map((loja, index) => (
-        <div
-          key={loja.id}
-          className="flex items-center justify-between p-3 rounded-lg border bg-card hover:bg-accent/50 transition-colors"
-        >
-          <div className="flex items-center gap-3">
-            <span className="font-bold text-muted-foreground w-6">
-              #{index + 1}
-            </span>
-            <Avatar className="h-10 w-10">
-              <AvatarFallback>
-                {loja.nome.split(' ').map(n => n[0]).join('')}
-              </AvatarFallback>
-            </Avatar>
-            <div>
-              <p className="font-medium">{loja.nome}</p>
-              <p className="text-sm text-muted-foreground">
-                {loja.vendas} vendas
-              </p>
-            </div>
-          </div>
-          <div className="text-right">
-            <p className="font-medium">
-              R$ {loja.valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-            </p>
-            <p className="text-sm text-muted-foreground">
-              Total em vendas
-            </p>
-          </div>
-        </div>
-      ))}
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Posição</TableHead>
+            <TableHead>Loja</TableHead>
+            <TableHead className="text-right">Total em Vendas</TableHead>
+            <TableHead className="text-right">Quantidade de Vendas</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {lojas.map((loja, index) => (
+            <TableRow key={loja.id}>
+              <TableCell className="font-medium">{index + 1}º</TableCell>
+              <TableCell>{loja.nome}</TableCell>
+              <TableCell className="text-right">
+                {loja.total_vendas.toLocaleString('pt-BR', {
+                  style: 'currency',
+                  currency: 'BRL'
+                })}
+              </TableCell>
+              <TableCell className="text-right">
+                {loja.quantidade_vendas}
+              </TableCell>
+            </TableRow>
+          ))}
+          {lojas.length === 0 && (
+            <TableRow>
+              <TableCell colSpan={4} className="text-center">
+                Nenhuma loja encontrada
+              </TableCell>
+            </TableRow>
+          )}
+        </TableBody>
+      </Table>
     </div>
-  )
-}
+  );
+};
