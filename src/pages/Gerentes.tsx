@@ -30,7 +30,6 @@ const formSchema = z.object({
   nome: z.string().min(2, "Nome deve ter pelo menos 2 caracteres"),
   email: z.string().email("Email inválido"),
   senha: z.string().min(6, "A senha deve ter pelo menos 6 caracteres"),
-  tipo: z.literal("gerente"),
 })
 
 type Manager = {
@@ -53,7 +52,6 @@ const Gerentes = () => {
       nome: "",
       email: "",
       senha: "",
-      tipo: "gerente",
     },
   })
 
@@ -79,7 +77,8 @@ const Gerentes = () => {
         password: values.senha,
         options: {
           data: {
-            role: "manager",
+            nome: values.nome,
+            role: "gerente",
           },
         },
       })
@@ -109,6 +108,7 @@ const Gerentes = () => {
       form.reset()
     },
     onError: (error) => {
+      console.error("Error creating manager:", error)
       toast({
         variant: "destructive",
         title: "Erro ao criar gerente",
