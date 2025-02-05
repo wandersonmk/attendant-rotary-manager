@@ -143,32 +143,7 @@ const Gerentes = () => {
           throw authError
         }
 
-        if (!authData.user?.id) {
-          throw new Error("Erro ao criar usuário")
-        }
-
-        // Create usuarios record
-        const { error: userError } = await supabase
-          .from("usuarios")
-          .insert([
-            {
-              nome: values.nome,
-              email: values.email,
-              senha: values.senha,
-              tipo: "gerente",
-              loja_id: parseInt(values.loja_id),
-              user_id: authData.user.id,
-            },
-          ])
-
-        if (userError) {
-          if (userError.code === "23505") {
-            return { success: true, message: "Usuário criado com sucesso" }
-          }
-          console.error("Error creating usuario:", userError)
-          throw userError
-        }
-
+        // The trigger will handle creating the usuarios record
         return { success: true, message: "Usuário criado com sucesso" }
       } catch (error) {
         const pgError = error as PostgrestError
@@ -235,8 +210,6 @@ const Gerentes = () => {
   const onSubmit = (values: z.infer<typeof formSchema>) => {
     createManager.mutate(values)
   }
-
-  // ... keep existing code (JSX for the component UI)
 
   return (
     <div className="flex min-h-screen w-full bg-[#F8FAFC] dark:bg-[#1A1F2C]">
