@@ -14,41 +14,120 @@ import {
 } from "@/components/ui/dropdown-menu"
 import jsPDF from 'jspdf'
 import * as XLSX from 'xlsx'
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { supabase } from "@/integrations/supabase/client"
+
+interface MetricasData {
+  vendasTotais: number;
+  vendedoresAtivos: number;
+  mediaVenda: number;
+  taxaConversao: number;
+}
 
 const Relatorios = () => {
   const [selectedVendedor, setSelectedVendedor] = useState<string>("Todos");
+  const [metricas, setMetricas] = useState<MetricasData>({
+    vendasTotais: 0,
+    vendedoresAtivos: 0,
+    mediaVenda: 0,
+    taxaConversao: 0
+  });
+
+  useEffect(() => {
+    const fetchMetricas = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (user) {
+        const { data: userData } = await supabase
+          .from('usuarios')
+          .select('loja_id')
+          .eq('user_id', user.id)
+          .maybeSingle();
+
+        if (userData?.loja_id) {
+          // Get total sales
+          const { data: salesData } = await supabase
+            .from('metricas')
+            .select('total_vendas')
+            .eq('loja_id', userData.loja_id)
+            .maybeSingle();
+
+          // Get active sellers count
+          const { count: activeVendedores } = await supabase
+            .from('vendedores')
+            .select('*', { count: 'exact', head: true })
+            .eq('loja_id', userData.loja_id)
+            .eq('ativo', true);
+
+          // Get completed sales for average calculation
+          const { data: completedSales } = await supabase
+            .from('atendimentos')
+            .select('valor_venda')
+            .eq('loja_id', userData.loja_id)
+            .eq('venda_efetuada', true)
+            .not('valor_venda', 'is', null);
+
+          // Calculate average sale value
+          const totalSalesValue = completedSales?.reduce((acc, curr) => acc + Number(curr.valor_venda || 0), 0) || 0;
+          const averageSale = completedSales?.length ? totalSalesValue / completedSales.length : 0;
+
+          // Calculate conversion rate
+          const { count: totalAtendimentos } = await supabase
+            .from('atendimentos')
+            .select('*', { count: 'exact', head: true })
+            .eq('loja_id', userData.loja_id);
+
+          const { count: successfulSales } = await supabase
+            .from('atendimentos')
+            .select('*', { count: 'exact', head: true })
+            .eq('loja_id', userData.loja_id)
+            .eq('venda_efetuada', true);
+
+          const conversionRate = totalAtendimentos ? (successfulSales / totalAtendimentos) * 100 : 0;
+
+          setMetricas({
+            vendasTotais: Number(salesData?.total_vendas || 0),
+            vendedoresAtivos: activeVendedores || 0,
+            mediaVenda: averageSale,
+            taxaConversao: conversionRate
+          });
+        }
+      }
+    };
+
+    fetchMetricas();
+  }, []);
 
   const exportToPDF = () => {
-    const doc = new jsPDF()
+    const doc = new jsPDF();
     
     // Título
-    doc.setFontSize(20)
-    doc.text("Relatório de Vendas", 20, 20)
+    doc.setFontSize(20);
+    doc.text("Relatório de Vendas", 20, 20);
     
     // Métricas
-    doc.setFontSize(14)
-    doc.text("Métricas Gerais", 20, 40)
-    doc.setFontSize(12)
-    doc.text(`Vendas Totais: R$ ${metricas.vendasTotais.toLocaleString()}`, 20, 50)
-    doc.text(`Vendedores Ativos: ${metricas.vendedoresAtivos}`, 20, 60)
-    doc.text(`Média por Venda: R$ ${metricas.mediaVenda.toLocaleString()}`, 20, 70)
-    doc.text(`Taxa de Conversão: ${metricas.taxaConversao}%`, 20, 80)
+    doc.setFontSize(14);
+    doc.text("Métricas Gerais", 20, 40);
+    doc.setFontSize(12);
+    doc.text(`Vendas Totais: R$ ${metricas.vendasTotais.toLocaleString()}`, 20, 50);
+    doc.text(`Vendedores Ativos: ${metricas.vendedoresAtivos}`, 20, 60);
+    doc.text(`Média por Venda: R$ ${metricas.mediaVenda.toLocaleString()}`, 20, 70);
+    doc.text(`Taxa de Conversão: ${metricas.taxaConversao}%`, 20, 80);
     
     // Ranking
-    doc.setFontSize(14)
-    doc.text("Ranking de Vendedores", 20, 100)
-    doc.setFontSize(12)
+    doc.setFontSize(14);
+    doc.text("Ranking de Vendedores", 20, 100);
+    doc.setFontSize(12);
     
-    doc.save("relatorio-vendas.pdf")
+    doc.save("relatorio-vendas.pdf");
     toast({
       title: "PDF exportado com sucesso!",
       description: "O relatório foi salvo como 'relatorio-vendas.pdf'",
-    })
-  }
+    });
+  };
 
   const exportToExcel = () => {
-    const workbook = XLSX.utils.book_new()
+    const workbook = XLSX.utils.book_new();
     
     // Métricas
     const metricasData = [
@@ -57,17 +136,17 @@ const Relatorios = () => {
       ["Vendedores Ativos", metricas.vendedoresAtivos],
       ["Média por Venda", `R$ ${metricas.mediaVenda.toLocaleString()}`],
       ["Taxa de Conversão", `${metricas.taxaConversao}%`],
-    ]
+    ];
     
-    const metricasSheet = XLSX.utils.aoa_to_sheet(metricasData)
-    XLSX.utils.book_append_sheet(workbook, metricasSheet, "Métricas")
+    const metricasSheet = XLSX.utils.aoa_to_sheet(metricasData);
+    XLSX.utils.book_append_sheet(workbook, metricasSheet, "Métricas");
     
-    XLSX.writeFile(workbook, "relatorio-vendas.xlsx")
+    XLSX.writeFile(workbook, "relatorio-vendas.xlsx");
     toast({
       title: "Excel exportado com sucesso!",
       description: "O relatório foi salvo como 'relatorio-vendas.xlsx'",
-    })
-  }
+    });
+  };
 
   return (
     <SidebarProvider defaultOpen>
@@ -140,7 +219,7 @@ const Relatorios = () => {
         </main>
       </div>
     </SidebarProvider>
-  )
-}
+  );
+};
 
-export default Relatorios
+export default Relatorios;
