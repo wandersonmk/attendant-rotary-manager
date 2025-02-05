@@ -103,7 +103,7 @@ const Gerentes = () => {
         // First check if user exists in usuarios table
         const { data: existingUser, error: queryError } = await supabase
           .from("usuarios")
-          .select("email")
+          .select("*")
           .eq("email", values.email)
           .maybeSingle()
 
