@@ -42,7 +42,9 @@ const Relatorios = () => {
         .order('nome');
       
       if (data) {
-        setLojas(data);
+        // Filter out any non-store entries if they exist
+        const storeOnly = data.filter(loja => loja.nome !== 'Administrador');
+        setLojas(storeOnly);
       }
     };
 
@@ -172,7 +174,7 @@ const Relatorios = () => {
                   </span>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="outline" className="flex items-center gap-2">
+                      <Button variant="outline" className="flex items-center gap-2 bg-white dark:bg-gray-800">
                         {selectedLoja}
                         <ChevronDown className="h-4 w-4" />
                       </Button>
