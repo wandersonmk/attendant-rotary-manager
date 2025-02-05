@@ -100,15 +100,32 @@ const Gerentes = () => {
   const createManager = useMutation({
     mutationFn: async (values: z.infer<typeof formSchema>) => {
       try {
-        // First check if user exists
-        const { data: existingUser } = await supabase
+        // First check if user exists in usuarios table
+        const { data: existingUser, error: queryError } = await supabase
           .from("usuarios")
           .select("id")
           .eq("email", values.email)
-          .single()
+          .maybeSingle()
+
+        if (queryError) {
+          console.error("Error checking existing user:", queryError)
+          throw new Error("Erro ao verificar usuário existente")
+        }
 
         if (existingUser) {
           throw new Error("Este email já está cadastrado no sistema")
+        }
+
+        // Check if user exists in auth
+        const { data: authUser, error: authCheckError } = await supabase.auth.admin.getUserByEmail(values.email)
+        
+        if (authCheckError && authCheckError.message !== "User not found") {
+          console.error("Error checking auth user:", authCheckError)
+          throw new Error("Erro ao verificar usuário existente")
+        }
+
+        if (authUser) {
+          throw new Error("Este email já está registrado no sistema")
         }
 
         // Create auth user
@@ -125,6 +142,7 @@ const Gerentes = () => {
         })
 
         if (authError) {
+          console.error("Error creating auth user:", authError)
           if (authError.message === "User already registered") {
             throw new Error("Este email já está registrado no sistema")
           }
@@ -145,7 +163,10 @@ const Gerentes = () => {
             },
           ])
 
-        if (userError) throw userError
+        if (userError) {
+          console.error("Error creating usuario:", userError)
+          throw userError
+        }
 
         return authData
       } catch (error: any) {
