@@ -18,6 +18,7 @@ export default function Lojas() {
       const { data } = await supabase
         .from('lojas')
         .select('*')
+        .neq('nome', 'Administrador')  // Filter out "Administrador"
         .order('nome')
 
       if (data) {
