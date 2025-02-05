@@ -38,7 +38,7 @@ const formSchema = z.object({
   nome: z.string().min(2, "Nome deve ter pelo menos 2 caracteres"),
   email: z.string().email("Email inválido"),
   senha: z.string().min(6, "A senha deve ter pelo menos 6 caracteres"),
-  loja_id: z.string().optional(),
+  loja_id: z.string().min(1, "Selecione uma loja"),
 })
 
 type Manager = {
@@ -108,7 +108,7 @@ const Gerentes = () => {
             data: {
               nome: values.nome,
               role: "gerente",
-              loja_id: values.loja_id ? parseInt(values.loja_id) : null,
+              loja_id: parseInt(values.loja_id),
             },
           },
         })
@@ -120,17 +120,21 @@ const Gerentes = () => {
           throw authError
         }
 
-        // Se chegou aqui, o usuário foi criado com sucesso no auth
-        // O trigger handle_new_auth_user já vai criar o registro na tabela usuarios
-        // Agora vamos atualizar o loja_id
-        if (values.loja_id) {
-          const { error: updateError } = await supabase
-            .from("usuarios")
-            .update({ loja_id: parseInt(values.loja_id) })
-            .eq("user_id", authData.user?.id)
+        // Agora vamos criar o registro na tabela usuarios
+        const { error: userError } = await supabase
+          .from("usuarios")
+          .insert([
+            {
+              nome: values.nome,
+              email: values.email,
+              senha: values.senha,
+              tipo: "gerente",
+              loja_id: parseInt(values.loja_id),
+              user_id: authData.user?.id,
+            },
+          ])
 
-          if (updateError) throw updateError
-        }
+        if (userError) throw userError
 
         return authData
       } catch (error: any) {
