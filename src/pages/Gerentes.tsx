@@ -107,12 +107,12 @@ const Gerentes = () => {
           .eq("email", values.email)
           .single()
 
-        if (queryError && queryError.code !== 'PGRST116') {
-          console.error("Error checking existing user:", queryError)
-          throw new Error("Erro ao verificar usuário existente")
-        }
-
-        if (existingUser) {
+        if (queryError) {
+          if (queryError.code !== 'PGRST116') {
+            console.error("Error checking existing user:", queryError)
+            throw new Error("Erro ao verificar usuário existente")
+          }
+        } else if (existingUser) {
           throw new Error("Este email já está cadastrado no sistema")
         }
 
@@ -156,17 +156,18 @@ const Gerentes = () => {
           ])
 
         if (userError) {
-          console.error("Error creating usuario:", userError)
+          // If we get a duplicate key error, it means the trigger already created the user
           if (userError.code === '23505') {
-            throw new Error("Este email já está cadastrado no sistema")
+            return authData // Return success since the user was created
           }
+          console.error("Error creating usuario:", userError)
           throw new Error("Erro ao criar usuário no sistema")
         }
 
         return authData
       } catch (error: any) {
         console.error("Error in createManager:", error)
-        throw new Error(error.message || "Erro ao criar gerente")
+        throw error
       }
     },
     onSuccess: () => {
@@ -180,11 +181,14 @@ const Gerentes = () => {
       form.reset()
     },
     onError: (error: Error) => {
-      toast({
-        variant: "destructive",
-        title: "Erro ao criar gerente",
-        description: error.message,
-      })
+      // Only show error toast for actual errors, not for duplicate key cases
+      if (!error.message.includes("duplicate key")) {
+        toast({
+          variant: "destructive",
+          title: "Erro ao criar gerente",
+          description: error.message,
+        })
+      }
     },
   })
 
