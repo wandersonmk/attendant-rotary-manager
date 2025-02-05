@@ -25,14 +25,15 @@ const Login = () => {
       if (error) throw error
 
       const { data: profile } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', user?.id)
+        .from('usuarios')
+        .select('*')
+        .eq('user_id', user?.id)
         .single()
 
-      if (profile?.role === 'super_admin') {
+      if (profile?.tipo === 'super_admin') {
         navigate('/super-admin')
-      } else if (profile?.role === 'manager') {
+      } else if (profile?.tipo === 'gerente') {
+        // Redirect manager to their specific store's dashboard
         navigate('/manager')
       } else {
         navigate('/atendimento')
