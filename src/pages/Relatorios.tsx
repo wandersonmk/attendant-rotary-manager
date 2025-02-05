@@ -2,16 +2,10 @@ import { SidebarProvider } from "@/components/ui/sidebar"
 import { DashboardSidebar } from "@/components/DashboardSidebar"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { FileSpreadsheet, FileText, ChevronDown } from "lucide-react"
+import { FileSpreadsheet, FileText } from "lucide-react"
 import { VendedorRanking } from "@/components/VendedorRanking"
 import { MetricasLoja } from "@/components/MetricasLoja"
 import { toast } from "@/components/ui/use-toast"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
 import jsPDF from 'jspdf'
 import * as XLSX from 'xlsx'
 import { useState, useEffect } from "react"
@@ -25,29 +19,12 @@ interface MetricasData {
 }
 
 const Relatorios = () => {
-  const [selectedLoja, setSelectedLoja] = useState<string>("Todas");
-  const [lojas, setLojas] = useState<{ id: number; nome: string; }[]>([]);
   const [metricas, setMetricas] = useState<MetricasData>({
     vendasTotais: 0,
     vendedoresAtivos: 0,
     mediaVenda: 0,
     taxaConversao: 0
   });
-
-  useEffect(() => {
-    const fetchLojas = async () => {
-      const { data } = await supabase
-        .from('lojas')
-        .select('id, nome')
-        .order('nome');
-      
-      if (data) {
-        setLojas(data);
-      }
-    };
-
-    fetchLojas();
-  }, []);
 
   useEffect(() => {
     const fetchMetricas = async () => {
@@ -175,32 +152,6 @@ const Relatorios = () => {
                 Relatórios
               </h1>
               <div className="flex gap-4 items-center">
-                <div className="flex flex-col items-end gap-1">
-                  <span className="text-sm text-gray-600 dark:text-gray-400">
-                    Filtrar por Loja:
-                  </span>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="outline" className="flex items-center gap-2">
-                        {selectedLoja}
-                        <ChevronDown className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent className="bg-white dark:bg-gray-800">
-                      <DropdownMenuItem onClick={() => setSelectedLoja("Todas")}>
-                        Todas
-                      </DropdownMenuItem>
-                      {lojas.map((loja) => (
-                        <DropdownMenuItem
-                          key={loja.id}
-                          onClick={() => setSelectedLoja(loja.nome)}
-                        >
-                          {loja.nome}
-                        </DropdownMenuItem>
-                      ))}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
                 <Button
                   variant="outline"
                   className="flex items-center gap-2"
