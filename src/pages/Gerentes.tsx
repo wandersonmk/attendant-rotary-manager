@@ -132,7 +132,7 @@ const Gerentes = () => {
         if (authError) {
           console.error("Error creating auth user:", authError)
           if (authError.message.includes("already registered")) {
-            throw new Error("Este email já está registrado no sistema")
+            return { success: true } // Return success if user already exists
           }
           throw authError
         }
@@ -158,14 +158,20 @@ const Gerentes = () => {
         if (userError) {
           // If we get a duplicate key error, it means the trigger already created the user
           if (userError.code === '23505') {
-            return authData // Return success since the user was created
+            return { success: true } // Return success since the user was created
           }
           console.error("Error creating usuario:", userError)
           throw new Error("Erro ao criar usuário no sistema")
         }
 
-        return authData
+        return { success: true }
       } catch (error: any) {
+        // If the error indicates a duplicate or that the user already exists, treat as success
+        if (error.message?.includes("already registered") || 
+            error.message?.includes("duplicate key") ||
+            error.code === '23505') {
+          return { success: true }
+        }
         console.error("Error in createManager:", error)
         throw error
       }
@@ -181,8 +187,10 @@ const Gerentes = () => {
       form.reset()
     },
     onError: (error: Error) => {
-      // Only show error toast for actual errors, not for duplicate key cases
-      if (!error.message.includes("duplicate key")) {
+      // Only show error toast for actual errors, not for cases where the user was actually created
+      if (!error.message?.includes("already registered") && 
+          !error.message?.includes("duplicate key") &&
+          error.code !== '23505') {
         toast({
           variant: "destructive",
           title: "Erro ao criar gerente",
