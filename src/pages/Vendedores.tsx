@@ -125,7 +125,7 @@ const Vendedores = () => {
                       <SelectTrigger className="w-[180px]">
                         <SelectValue placeholder="Selecione uma loja" />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent className="bg-white dark:bg-gray-800">
                         <SelectItem value="all">Todas as lojas</SelectItem>
                         {lojas.map((loja) => (
                           <SelectItem key={loja.id} value={loja.id.toString()}>
