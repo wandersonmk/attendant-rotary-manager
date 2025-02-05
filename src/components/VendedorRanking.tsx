@@ -1,5 +1,7 @@
+import { useEffect, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { supabase } from "@/integrations/supabase/client"
 
 interface Vendedor {
   id: number;
@@ -8,11 +10,69 @@ interface Vendedor {
   valor: number;
 }
 
-interface VendedorRankingProps {
-  data: Vendedor[];
-}
+export const VendedorRanking = () => {
+  const [vendedores, setVendedores] = useState<Vendedor[]>([])
 
-export const VendedorRanking = ({ data }: VendedorRankingProps) => {
+  useEffect(() => {
+    const fetchVendedoresRanking = async () => {
+      // Get current user and their store
+      const { data: { user } } = await supabase.auth.getUser()
+      
+      if (user) {
+        const { data: userData } = await supabase
+          .from('usuarios')
+          .select('loja_id')
+          .eq('user_id', user.id)
+          .maybeSingle()
+
+        if (userData?.loja_id) {
+          // Get all active sellers from the store
+          const { data: vendedoresData } = await supabase
+            .from('vendedores')
+            .select(`
+              id,
+              nome,
+              atendimentos!inner (
+                valor_venda,
+                venda_efetuada
+              )
+            `)
+            .eq('loja_id', userData.loja_id)
+            .eq('ativo', true)
+
+          if (vendedoresData) {
+            // Calculate total sales and amount for each seller
+            const vendedoresProcessados = vendedoresData.map(vendedor => {
+              const vendasEfetuadas = vendedor.atendimentos.filter(
+                (a: any) => a.venda_efetuada
+              ).length
+              const valorTotal = vendedor.atendimentos.reduce(
+                (acc: number, curr: any) => acc + Number(curr.valor_venda || 0),
+                0
+              )
+
+              return {
+                id: vendedor.id,
+                nome: vendedor.nome,
+                vendas: vendasEfetuadas,
+                valor: valorTotal
+              }
+            })
+
+            // Sort by total sales value
+            const vendedoresOrdenados = vendedoresProcessados.sort(
+              (a, b) => b.valor - a.valor
+            )
+
+            setVendedores(vendedoresOrdenados)
+          }
+        }
+      }
+    }
+
+    fetchVendedoresRanking()
+  }, [])
+
   return (
     <Card className="bg-white dark:bg-gray-800">
       <CardHeader>
@@ -22,7 +82,7 @@ export const VendedorRanking = ({ data }: VendedorRankingProps) => {
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          {data.map((vendedor, index) => (
+          {vendedores.map((vendedor, index) => (
             <div
               key={vendedor.id}
               className="flex items-center justify-between p-3 rounded-lg border bg-card hover:bg-accent/50 transition-colors"
@@ -45,7 +105,7 @@ export const VendedorRanking = ({ data }: VendedorRankingProps) => {
               </div>
               <div className="text-right">
                 <p className="font-medium">
-                  R$ {vendedor.valor.toLocaleString()}
+                  R$ {vendedor.valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                 </p>
                 <p className="text-sm text-muted-foreground">
                   Total em vendas
