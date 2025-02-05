@@ -4,13 +4,21 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { FileSpreadsheet, FileText, ChevronDown } from "lucide-react"
 import { LojaRanking } from "@/components/LojaRanking"
-import { toast } from "@/components/ui/use-toast"
+import { toast } from "@/hooks/use-toast"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
 import jsPDF from 'jspdf'
 import * as XLSX from 'xlsx'
 import { useState, useEffect } from "react"
@@ -23,9 +31,19 @@ interface MetricasData {
   taxaConversao: number;
 }
 
+interface LojaMetricas {
+  id: number;
+  nome: string;
+  total_vendas: number;
+  vendedores_ativos: number;
+  media_venda: number;
+  taxa_conversao: number;
+}
+
 const Relatorios = () => {
   const [selectedLoja, setSelectedLoja] = useState<string>("Todas");
   const [lojas, setLojas] = useState<{ id: number; nome: string; }[]>([]);
+  const [lojasMetricas, setLojasMetricas] = useState<LojaMetricas[]>([]);
   const [metricas, setMetricas] = useState<MetricasData>({
     vendasTotais: 0,
     vendedoresAtivos: 0,
@@ -42,7 +60,6 @@ const Relatorios = () => {
         .order('nome');
       
       if (error) {
-        console.error('Error fetching lojas:', error);
         toast({
           title: "Erro ao carregar lojas",
           description: "Não foi possível carregar a lista de lojas.",
@@ -60,70 +77,88 @@ const Relatorios = () => {
   }, []);
 
   useEffect(() => {
-    const fetchMetricas = async () => {
-      let query = supabase
-        .from('atendimentos')
-        .select(`
-          valor_venda,
-          venda_efetuada,
-          loja_id,
-          lojas!inner (
-            id,
-            nome
-          )
-        `);
+    const fetchMetricasTodasLojas = async () => {
+      const metricas: LojaMetricas[] = [];
 
-      // Apply store filter if selected
-      if (selectedLoja !== "Todas") {
-        const loja = lojas.find(l => l.nome === selectedLoja);
-        if (loja) {
-          query = query.eq('loja_id', loja.id);
-        }
-      }
+      for (const loja of lojas) {
+        // Get sales data
+        const { data: vendasData } = await supabase
+          .from('atendimentos')
+          .select('valor_venda, venda_efetuada')
+          .eq('loja_id', loja.id);
 
-      const { data: atendimentos } = await query;
-
-      if (atendimentos) {
-        // Calculate total sales value
-        const totalVendas = atendimentos.reduce((acc, curr) => 
-          curr.venda_efetuada ? acc + Number(curr.valor_venda || 0) : acc, 0);
-
-        // Count active sellers for the selected store(s)
+        // Get active sellers
         const { count: vendedoresAtivos } = await supabase
           .from('vendedores')
           .select('*', { count: 'exact', head: true })
-          .eq('ativo', true)
-          .in(
-            'loja_id',
-            selectedLoja === "Todas"
-              ? lojas.map(l => l.id)
-              : [lojas.find(l => l.nome === selectedLoja)?.id].filter(Boolean)
-          );
+          .eq('loja_id', loja.id)
+          .eq('ativo', true);
 
-        // Calculate average sale value
-        const vendasEfetuadas = atendimentos.filter(a => a.venda_efetuada && a.valor_venda);
-        const mediaVenda = vendasEfetuadas.length > 0
-          ? totalVendas / vendasEfetuadas.length
-          : 0;
+        if (vendasData) {
+          const vendasEfetuadas = vendasData.filter(v => v.venda_efetuada);
+          const totalVendas = vendasEfetuadas.reduce((sum, venda) => 
+            sum + Number(venda.valor_venda || 0), 0);
+          const mediaVenda = vendasEfetuadas.length > 0 
+            ? totalVendas / vendasEfetuadas.length 
+            : 0;
+          const taxaConversao = vendasData.length > 0
+            ? (vendasEfetuadas.length / vendasData.length) * 100
+            : 0;
 
-        // Calculate conversion rate
-        const taxaConversao = atendimentos.length > 0
-          ? (vendasEfetuadas.length / atendimentos.length) * 100
-          : 0;
-
-        setMetricas({
-          vendasTotais: totalVendas,
-          vendedoresAtivos: vendedoresAtivos || 0,
-          mediaVenda,
-          taxaConversao
-        });
+          metricas.push({
+            id: loja.id,
+            nome: loja.nome,
+            total_vendas: totalVendas,
+            vendedores_ativos: vendedoresAtivos || 0,
+            media_venda: mediaVenda,
+            taxa_conversao: taxaConversao
+          });
+        }
       }
+
+      setLojasMetricas(metricas.sort((a, b) => b.total_vendas - a.total_vendas));
     };
 
     if (lojas.length > 0) {
-      fetchMetricas();
+      fetchMetricasTodasLojas();
     }
-  }, [selectedLoja, lojas]);
+  }, [lojas]);
+
+  useEffect(() => {
+    const fetchMetricasLojaSelecionada = async () => {
+      if (selectedLoja === "Todas") {
+        const totais = lojasMetricas.reduce((acc, loja) => ({
+          vendasTotais: acc.vendasTotais + loja.total_vendas,
+          vendedoresAtivos: acc.vendedoresAtivos + loja.vendedores_ativos,
+          mediaVenda: acc.mediaVenda + loja.media_venda,
+          taxaConversao: acc.taxaConversao + loja.taxa_conversao
+        }), {
+          vendasTotais: 0,
+          vendedoresAtivos: 0,
+          mediaVenda: 0,
+          taxaConversao: 0
+        });
+
+        setMetricas({
+          ...totais,
+          mediaVenda: totais.mediaVenda / lojasMetricas.length,
+          taxaConversao: totais.taxaConversao / lojasMetricas.length
+        });
+      } else {
+        const lojaMetricas = lojasMetricas.find(l => l.nome === selectedLoja);
+        if (lojaMetricas) {
+          setMetricas({
+            vendasTotais: lojaMetricas.total_vendas,
+            vendedoresAtivos: lojaMetricas.vendedores_ativos,
+            mediaVenda: lojaMetricas.media_venda,
+            taxaConversao: lojaMetricas.taxa_conversao
+          });
+        }
+      }
+    };
+
+    fetchMetricasLojaSelecionada();
+  }, [selectedLoja, lojasMetricas]);
 
   const exportToPDF = () => {
     const doc = new jsPDF();
@@ -286,14 +321,60 @@ const Relatorios = () => {
                 </CardContent>
               </Card>
 
-              <Card>
-                <CardHeader>
-                  <CardTitle>Ranking de Lojas</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <LojaRanking selectedLoja={selectedLoja} />
-                </CardContent>
-              </Card>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Métricas por Loja</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Loja</TableHead>
+                          <TableHead className="text-right">Vendas Totais</TableHead>
+                          <TableHead className="text-right">Vendedores</TableHead>
+                          <TableHead className="text-right">Média/Venda</TableHead>
+                          <TableHead className="text-right">Conversão</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {lojasMetricas.map((loja) => (
+                          <TableRow key={loja.id}>
+                            <TableCell>{loja.nome}</TableCell>
+                            <TableCell className="text-right">
+                              {loja.total_vendas.toLocaleString('pt-BR', {
+                                style: 'currency',
+                                currency: 'BRL'
+                              })}
+                            </TableCell>
+                            <TableCell className="text-right">
+                              {loja.vendedores_ativos}
+                            </TableCell>
+                            <TableCell className="text-right">
+                              {loja.media_venda.toLocaleString('pt-BR', {
+                                style: 'currency',
+                                currency: 'BRL'
+                              })}
+                            </TableCell>
+                            <TableCell className="text-right">
+                              {loja.taxa_conversao.toFixed(1)}%
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Ranking de Lojas</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <LojaRanking selectedLoja={selectedLoja} />
+                  </CardContent>
+                </Card>
+              </div>
             </div>
           </div>
         </main>
