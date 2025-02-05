@@ -157,9 +157,9 @@ const Gerentes = () => {
 
         if (userError) {
           console.error("Error creating usuario:", userError)
-          // If we fail to create the usuario record, we should clean up the auth user
-          await supabase.auth.admin.deleteUser(authData.user.id)
-          throw new Error("Erro ao criar usuário no sistema")
+          // Since we can't delete the auth user from client side,
+          // we'll just show an error message
+          throw new Error("Erro ao criar usuário no sistema. Por favor, contate o suporte.")
         }
 
         return authData
