@@ -16,17 +16,36 @@ export const VendedorList = () => {
   const [vendedores, setVendedores] = useState<Vendedor[]>([]);
   const [novoVendedor, setNovoVendedor] = useState("");
   const [filtro, setFiltro] = useState("");
+  const [lojaId, setLojaId] = useState<number | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
-    fetchVendedores();
+    const getUserStore = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (user) {
+        const { data: userData } = await supabase
+          .from('usuarios')
+          .select('loja_id')
+          .eq('user_id', user.id)
+          .single();
+
+        if (userData?.loja_id) {
+          setLojaId(userData.loja_id);
+          fetchVendedores(userData.loja_id);
+        }
+      }
+    };
+
+    getUserStore();
   }, []);
 
-  const fetchVendedores = async () => {
+  const fetchVendedores = async (storeId: number) => {
     try {
       const { data: vendedoresData, error } = await supabase
         .from('vendedores')
         .select('*')
+        .eq('loja_id', storeId)
         .order('nome');
 
       if (error) {
@@ -51,7 +70,7 @@ export const VendedorList = () => {
   };
 
   const adicionarVendedor = async () => {
-    if (!novoVendedor.trim()) {
+    if (!novoVendedor.trim() || !lojaId) {
       toast({
         title: "Erro",
         description: "Por favor, insira o nome do vendedor",
@@ -64,7 +83,10 @@ export const VendedorList = () => {
       const { data, error } = await supabase
         .from('vendedores')
         .insert([
-          { nome: novoVendedor.trim() }
+          { 
+            nome: novoVendedor.trim(),
+            loja_id: lojaId
+          }
         ])
         .select()
         .single();
@@ -94,7 +116,8 @@ export const VendedorList = () => {
       const { error } = await supabase
         .from('vendedores')
         .delete()
-        .eq('id', id);
+        .eq('id', id)
+        .eq('loja_id', lojaId); // Ensure we only delete from the correct store
 
       if (error) {
         throw error;
