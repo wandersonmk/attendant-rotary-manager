@@ -54,6 +54,13 @@ type Store = {
   nome: string
 }
 
+interface PostgrestError {
+  code?: string
+  message: string
+  details?: string
+  hint?: string
+}
+
 const Gerentes = () => {
   const [search, setSearch] = useState("")
   const [isOpen, setIsOpen] = useState(false)
@@ -105,15 +112,15 @@ const Gerentes = () => {
           .from("usuarios")
           .select("*")
           .eq("email", values.email)
-          .single()
+          .maybeSingle()
 
-        if (queryError) {
-          if (queryError.code !== 'PGRST116') {
-            console.error("Error checking existing user:", queryError)
-            throw new Error("Erro ao verificar usuário existente")
-          }
-        } else if (existingUser) {
-          throw new Error("Este email já está cadastrado no sistema")
+        if (queryError && queryError.code !== "PGRST116") {
+          console.error("Error checking existing user:", queryError)
+          throw new Error("Erro ao verificar usuário existente")
+        }
+
+        if (existingUser) {
+          return { success: true, message: "Usuário já existe" }
         }
 
         // Create auth user
@@ -130,9 +137,8 @@ const Gerentes = () => {
         })
 
         if (authError) {
-          console.error("Error creating auth user:", authError)
           if (authError.message.includes("already registered")) {
-            return { success: true } // Return success if user already exists
+            return { success: true, message: "Usuário já registrado" }
           }
           throw authError
         }
@@ -156,27 +162,28 @@ const Gerentes = () => {
           ])
 
         if (userError) {
-          // If we get a duplicate key error, it means the trigger already created the user
-          if (userError.code === '23505') {
-            return { success: true } // Return success since the user was created
+          if (userError.code === "23505") {
+            return { success: true, message: "Usuário criado com sucesso" }
           }
           console.error("Error creating usuario:", userError)
-          throw new Error("Erro ao criar usuário no sistema")
+          throw userError
         }
 
-        return { success: true }
-      } catch (error: any) {
-        // If the error indicates a duplicate or that the user already exists, treat as success
-        if (error.message?.includes("already registered") || 
-            error.message?.includes("duplicate key") ||
-            error.code === '23505') {
-          return { success: true }
+        return { success: true, message: "Usuário criado com sucesso" }
+      } catch (error) {
+        const pgError = error as PostgrestError
+        if (pgError.code === "23505" || 
+            (pgError.message && (
+              pgError.message.includes("already registered") ||
+              pgError.message.includes("duplicate key")
+            ))
+        ) {
+          return { success: true, message: "Usuário já existe" }
         }
-        console.error("Error in createManager:", error)
         throw error
       }
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["managers"] })
       toast({
         variant: "success",
@@ -186,11 +193,11 @@ const Gerentes = () => {
       setIsOpen(false)
       form.reset()
     },
-    onError: (error: Error) => {
-      // Only show error toast for actual errors, not for cases where the user was actually created
-      if (!error.message?.includes("already registered") && 
-          !error.message?.includes("duplicate key") &&
-          error.code !== '23505') {
+    onError: (error: Error | PostgrestError) => {
+      const pgError = error as PostgrestError
+      if (pgError.code !== "23505" && 
+          !pgError.message?.includes("already registered") && 
+          !pgError.message?.includes("duplicate key")) {
         toast({
           variant: "destructive",
           title: "Erro ao criar gerente",
