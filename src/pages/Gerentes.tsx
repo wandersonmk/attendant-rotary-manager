@@ -6,7 +6,7 @@ import { Search, Plus, Edit2, Trash2 } from "lucide-react"
 import { DashboardSidebar } from "@/components/DashboardSidebar"
 import { useToast } from "@/hooks/use-toast"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
-import { supabase } from "@/lib/supabase"
+import { supabase } from "@/integrations/supabase/client"
 import {
   Dialog,
   DialogContent,
@@ -131,10 +131,14 @@ const Gerentes = () => {
 
         if (authError) {
           console.error("Error creating auth user:", authError)
-          if (authError.message === "User already registered") {
+          if (authError.message.includes("already registered")) {
             throw new Error("Este email já está registrado no sistema")
           }
           throw authError
+        }
+
+        if (!authData.user?.id) {
+          throw new Error("Erro ao criar usuário")
         }
 
         // Create usuarios record
@@ -147,13 +151,15 @@ const Gerentes = () => {
               senha: values.senha,
               tipo: "gerente",
               loja_id: parseInt(values.loja_id),
-              user_id: authData.user?.id,
+              user_id: authData.user.id,
             },
           ])
 
         if (userError) {
           console.error("Error creating usuario:", userError)
-          throw userError
+          // If we fail to create the usuario record, we should clean up the auth user
+          await supabase.auth.admin.deleteUser(authData.user.id)
+          throw new Error("Erro ao criar usuário no sistema")
         }
 
         return authData
