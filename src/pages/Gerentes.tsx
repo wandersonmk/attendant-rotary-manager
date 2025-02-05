@@ -105,9 +105,9 @@ const Gerentes = () => {
           .from("usuarios")
           .select("*")
           .eq("email", values.email)
-          .maybeSingle()
+          .single()
 
-        if (queryError) {
+        if (queryError && queryError.code !== 'PGRST116') {
           console.error("Error checking existing user:", queryError)
           throw new Error("Erro ao verificar usuário existente")
         }
@@ -157,6 +157,9 @@ const Gerentes = () => {
 
         if (userError) {
           console.error("Error creating usuario:", userError)
+          if (userError.code === '23505') {
+            throw new Error("Este email já está cadastrado no sistema")
+          }
           throw new Error("Erro ao criar usuário no sistema")
         }
 
@@ -213,6 +216,8 @@ const Gerentes = () => {
   const onSubmit = (values: z.infer<typeof formSchema>) => {
     createManager.mutate(values)
   }
+
+  // ... keep existing code (JSX for the component UI)
 
   return (
     <div className="flex min-h-screen w-full bg-[#F8FAFC] dark:bg-[#1A1F2C]">
