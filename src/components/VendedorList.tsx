@@ -1,31 +1,56 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { UserPlus, UserMinus } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Vendedor {
   id: number;
   nome: string;
-  status: "disponível" | "atendendo";
-  tempoEspera?: string;
+  ativo: boolean;
+  loja_id: number | null;
 }
 
 export const VendedorList = () => {
-  const [vendedores, setVendedores] = useState<Vendedor[]>([
-    { id: 1, nome: "Carlos Silva", status: "disponível" },
-    { id: 2, nome: "Ana Oliveira", status: "atendendo", tempoEspera: "5 min" },
-    { id: 3, nome: "João Santos", status: "disponível" },
-    { id: 4, nome: "Maria Lima", status: "disponível" },
-    { id: 5, nome: "Pedro Costa", status: "atendendo", tempoEspera: "10 min" },
-    { id: 6, nome: "Julia Rocha", status: "disponível" },
-  ]);
-
+  const [vendedores, setVendedores] = useState<Vendedor[]>([]);
   const [novoVendedor, setNovoVendedor] = useState("");
   const [filtro, setFiltro] = useState("");
   const { toast } = useToast();
 
-  const adicionarVendedor = () => {
+  useEffect(() => {
+    fetchVendedores();
+  }, []);
+
+  const fetchVendedores = async () => {
+    try {
+      const { data: vendedoresData, error } = await supabase
+        .from('vendedores')
+        .select('*')
+        .order('nome');
+
+      if (error) {
+        console.error('Erro ao buscar vendedores:', error);
+        toast({
+          title: "Erro",
+          description: "Não foi possível carregar os vendedores",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      setVendedores(vendedoresData || []);
+    } catch (error) {
+      console.error('Erro ao buscar vendedores:', error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível carregar os vendedores",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const adicionarVendedor = async () => {
     if (!novoVendedor.trim()) {
       toast({
         title: "Erro",
@@ -35,28 +60,59 @@ export const VendedorList = () => {
       return;
     }
 
-    const novoId = Math.max(...vendedores.map(v => v.id)) + 1;
-    setVendedores([
-      ...vendedores,
-      {
-        id: novoId,
-        nome: novoVendedor,
-        status: "disponível"
+    try {
+      const { data, error } = await supabase
+        .from('vendedores')
+        .insert([
+          { nome: novoVendedor.trim() }
+        ])
+        .select()
+        .single();
+
+      if (error) {
+        throw error;
       }
-    ]);
-    setNovoVendedor("");
-    toast({
-      title: "Sucesso",
-      description: "Vendedor adicionado com sucesso",
-    });
+
+      setVendedores([...vendedores, data]);
+      setNovoVendedor("");
+      toast({
+        title: "Sucesso",
+        description: "Vendedor adicionado com sucesso",
+      });
+    } catch (error) {
+      console.error('Erro ao adicionar vendedor:', error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível adicionar o vendedor",
+        variant: "destructive",
+      });
+    }
   };
 
-  const removerVendedor = (id: number) => {
-    setVendedores(vendedores.filter(v => v.id !== id));
-    toast({
-      title: "Sucesso",
-      description: "Vendedor removido com sucesso",
-    });
+  const removerVendedor = async (id: number) => {
+    try {
+      const { error } = await supabase
+        .from('vendedores')
+        .delete()
+        .eq('id', id);
+
+      if (error) {
+        throw error;
+      }
+
+      setVendedores(vendedores.filter(v => v.id !== id));
+      toast({
+        title: "Sucesso",
+        description: "Vendedor removido com sucesso",
+      });
+    } catch (error) {
+      console.error('Erro ao remover vendedor:', error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível remover o vendedor",
+        variant: "destructive",
+      });
+    }
   };
 
   const vendedoresFiltrados = vendedores.filter(vendedor =>
@@ -89,18 +145,17 @@ export const VendedorList = () => {
         <div
           key={vendedor.id}
           className={`flex items-center justify-between p-3 rounded-lg border ${
-            vendedor.status === "disponível" ? "bg-white dark:bg-gray-800" : "bg-muted"
+            vendedor.ativo ? "bg-white dark:bg-gray-800" : "bg-muted"
           }`}
         >
           <div>
             <h3 className="font-medium">{vendedor.nome}</h3>
             <span
               className={`text-sm ${
-                vendedor.status === "disponível" ? "text-success" : "text-muted-foreground"
+                vendedor.ativo ? "text-success" : "text-muted-foreground"
               }`}
             >
-              {vendedor.status.charAt(0).toUpperCase() + vendedor.status.slice(1)}
-              {vendedor.tempoEspera && ` - ${vendedor.tempoEspera}`}
+              {vendedor.ativo ? "Ativo" : "Inativo"}
             </span>
           </div>
           <Button
