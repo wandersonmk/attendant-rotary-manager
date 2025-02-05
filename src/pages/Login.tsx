@@ -30,7 +30,8 @@ const Login = () => {
         .eq('user_id', user?.id)
         .single()
 
-      if (profile?.tipo === 'super_admin') {
+      // Updated logic to handle both 'admin' and 'super_admin' types
+      if (profile?.tipo === 'super_admin' || profile?.tipo === 'admin') {
         navigate('/super-admin')
       } else if (profile?.tipo === 'gerente') {
         navigate('/manager')
