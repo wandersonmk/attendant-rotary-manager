@@ -6,8 +6,7 @@ import { Search, Plus, Edit2, Trash2 } from "lucide-react"
 import { DashboardSidebar } from "@/components/DashboardSidebar"
 import { useToast } from "@/hooks/use-toast"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
-import { supabase } from "@/lib/supabase"
-import type { Manager } from "@/lib/supabase"
+import { supabase } from "@/integrations/supabase/client"
 import {
   Dialog,
   DialogContent,
@@ -35,11 +34,19 @@ import { z } from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
 
 const formSchema = z.object({
-  name: z.string().min(2, "Nome deve ter pelo menos 2 caracteres"),
+  nome: z.string().min(2, "Nome deve ter pelo menos 2 caracteres"),
   email: z.string().email("Email inválido"),
-  store: z.string().min(2, "Nome da loja deve ter pelo menos 2 caracteres"),
-  status: z.enum(["Ativo", "Inativo"]),
+  loja_id: z.number().optional(),
+  tipo: z.literal("gerente"),
 })
+
+type Manager = {
+  id: number
+  nome: string
+  email: string
+  tipo: string
+  loja_id: number | null
+}
 
 const Gerentes = () => {
   const [search, setSearch] = useState("")
@@ -50,10 +57,9 @@ const Gerentes = () => {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: "",
+      nome: "",
       email: "",
-      store: "",
-      status: "Ativo",
+      tipo: "gerente",
     },
   })
 
@@ -61,9 +67,10 @@ const Gerentes = () => {
     queryKey: ["managers"],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("managers")
+        .from("usuarios")
         .select("*")
-        .order("created_at", { ascending: false })
+        .eq("tipo", "gerente")
+        .order("id", { ascending: false })
 
       if (error) throw error
       return data as Manager[]
@@ -84,13 +91,13 @@ const Gerentes = () => {
 
       if (authError) throw authError
 
-      const { error } = await supabase.from("managers").insert([
+      const { error } = await supabase.from("usuarios").insert([
         {
-          id: authData.user?.id,
-          name: values.name,
+          nome: values.nome,
           email: values.email,
-          store: values.store,
-          status: values.status,
+          senha: "senha123", // This should be hashed in production
+          tipo: "gerente",
+          user_id: authData.user?.id,
         },
       ])
 
@@ -115,8 +122,8 @@ const Gerentes = () => {
   })
 
   const deleteManager = useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase.from("managers").delete().eq("id", id)
+    mutationFn: async (id: number) => {
+      const { error } = await supabase.from("usuarios").delete().eq("id", id)
       if (error) throw error
     },
     onSuccess: () => {
@@ -135,9 +142,8 @@ const Gerentes = () => {
   })
 
   const filteredManagers = managers?.filter((manager) =>
-    manager.name.toLowerCase().includes(search.toLowerCase()) ||
-    manager.email.toLowerCase().includes(search.toLowerCase()) ||
-    manager.store.toLowerCase().includes(search.toLowerCase())
+    manager.nome.toLowerCase().includes(search.toLowerCase()) ||
+    manager.email.toLowerCase().includes(search.toLowerCase())
   )
 
   const onSubmit = (values: z.infer<typeof formSchema>) => {
@@ -183,7 +189,7 @@ const Gerentes = () => {
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                       <FormField
                         control={form.control}
-                        name="name"
+                        name="nome"
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>Nome</FormLabel>
@@ -207,40 +213,6 @@ const Gerentes = () => {
                           </FormItem>
                         )}
                       />
-                      <FormField
-                        control={form.control}
-                        name="store"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Loja</FormLabel>
-                            <FormControl>
-                              <Input {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="status"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Status</FormLabel>
-                            <Select onValueChange={field.onChange} defaultValue={field.value}>
-                              <FormControl>
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Selecione o status" />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                <SelectItem value="Ativo">Ativo</SelectItem>
-                                <SelectItem value="Inativo">Inativo</SelectItem>
-                              </SelectContent>
-                            </Select>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
                       <Button type="submit" className="w-full" disabled={createManager.isPending}>
                         {createManager.isPending ? "Criando..." : "Criar Gerente"}
                       </Button>
@@ -257,30 +229,20 @@ const Gerentes = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                <div className="grid grid-cols-5 gap-4 px-4 py-2 bg-gray-50 dark:bg-gray-900 rounded-lg font-medium">
+                <div className="grid grid-cols-4 gap-4 px-4 py-2 bg-gray-50 dark:bg-gray-900 rounded-lg font-medium">
                   <div>Nome</div>
                   <div>Email</div>
                   <div>Loja</div>
-                  <div>Status</div>
                   <div>Ações</div>
                 </div>
                 {isLoading ? (
                   <div className="text-center py-4">Carregando...</div>
                 ) : (
                   filteredManagers?.map((manager) => (
-                    <div key={manager.id} className="grid grid-cols-5 gap-4 px-4 py-3 bg-white dark:bg-gray-800 rounded-lg items-center">
-                      <div>{manager.name}</div>
+                    <div key={manager.id} className="grid grid-cols-4 gap-4 px-4 py-3 bg-white dark:bg-gray-800 rounded-lg items-center">
+                      <div>{manager.nome}</div>
                       <div className="text-gray-600 dark:text-gray-300">{manager.email}</div>
-                      <div>{manager.store}</div>
-                      <div>
-                        <span className={`px-2 py-1 rounded-full text-xs ${
-                          manager.status === "Ativo" 
-                            ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
-                            : "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
-                        }`}>
-                          {manager.status}
-                        </span>
-                      </div>
+                      <div>{manager.loja_id || "Não atribuída"}</div>
                       <div className="flex gap-2">
                         <Button variant="ghost" size="icon" className="h-8 w-8">
                           <Edit2 className="h-4 w-4" />
