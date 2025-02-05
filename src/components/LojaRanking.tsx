@@ -10,7 +10,11 @@ interface Loja {
   valor: number;
 }
 
-export const LojaRanking = () => {
+interface Props {
+  selectedLoja?: string;
+}
+
+export const LojaRanking = ({ selectedLoja }: Props) => {
   const [lojas, setLojas] = useState<Loja[]>([])
 
   useEffect(() => {
@@ -51,55 +55,51 @@ export const LojaRanking = () => {
           (a, b) => b.valor - a.valor
         )
 
-        setLojas(lojasOrdenadas)
+        // Filter by selected store if one is selected
+        const lojasFiltradas = selectedLoja && selectedLoja !== "Todas"
+          ? lojasOrdenadas.filter(loja => loja.nome === selectedLoja)
+          : lojasOrdenadas
+
+        setLojas(lojasFiltradas)
       }
     }
 
     fetchLojasRanking()
-  }, [])
+  }, [selectedLoja])
 
   return (
-    <Card className="bg-white dark:bg-gray-800">
-      <CardHeader>
-        <CardTitle className="text-lg font-semibold">
-          Ranking de Lojas
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-4">
-          {lojas.map((loja, index) => (
-            <div
-              key={loja.id}
-              className="flex items-center justify-between p-3 rounded-lg border bg-card hover:bg-accent/50 transition-colors"
-            >
-              <div className="flex items-center gap-3">
-                <span className="font-bold text-muted-foreground w-6">
-                  #{index + 1}
-                </span>
-                <Avatar className="h-10 w-10">
-                  <AvatarFallback>
-                    {loja.nome.split(' ').map(n => n[0]).join('')}
-                  </AvatarFallback>
-                </Avatar>
-                <div>
-                  <p className="font-medium">{loja.nome}</p>
-                  <p className="text-sm text-muted-foreground">
-                    {loja.vendas} vendas
-                  </p>
-                </div>
-              </div>
-              <div className="text-right">
-                <p className="font-medium">
-                  R$ {loja.valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  Total em vendas
-                </p>
-              </div>
+    <div className="space-y-4">
+      {lojas.map((loja, index) => (
+        <div
+          key={loja.id}
+          className="flex items-center justify-between p-3 rounded-lg border bg-card hover:bg-accent/50 transition-colors"
+        >
+          <div className="flex items-center gap-3">
+            <span className="font-bold text-muted-foreground w-6">
+              #{index + 1}
+            </span>
+            <Avatar className="h-10 w-10">
+              <AvatarFallback>
+                {loja.nome.split(' ').map(n => n[0]).join('')}
+              </AvatarFallback>
+            </Avatar>
+            <div>
+              <p className="font-medium">{loja.nome}</p>
+              <p className="text-sm text-muted-foreground">
+                {loja.vendas} vendas
+              </p>
             </div>
-          ))}
+          </div>
+          <div className="text-right">
+            <p className="font-medium">
+              R$ {loja.valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+            </p>
+            <p className="text-sm text-muted-foreground">
+              Total em vendas
+            </p>
+          </div>
         </div>
-      </CardContent>
-    </Card>
+      ))}
+    </div>
   )
 }
