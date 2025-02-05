@@ -18,6 +18,8 @@ import {
   SidebarFooter,
 } from "@/components/ui/sidebar"
 import { Link, useLocation } from "react-router-dom"
+import { useEffect, useState } from "react"
+import { supabase } from "@/integrations/supabase/client"
 
 const primaryMenuItems = [
   {
@@ -54,16 +56,41 @@ const primaryMenuItems = [
 
 export function DashboardSidebar() {
   const location = useLocation()
+  const [storeName, setStoreName] = useState("")
+
+  useEffect(() => {
+    const fetchStoreInfo = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      
+      if (user) {
+        const { data: userData } = await supabase
+          .from('usuarios')
+          .select('loja_id')
+          .eq('user_id', user.id)
+          .single()
+
+        if (userData?.loja_id) {
+          const { data: storeData } = await supabase
+            .from('lojas')
+            .select('nome')
+            .eq('id', userData.loja_id)
+            .single()
+
+          if (storeData) {
+            setStoreName(storeData.nome)
+          }
+        }
+      }
+    }
+
+    fetchStoreInfo()
+  }, [])
 
   return (
     <Sidebar>
       <SidebarContent>
         <div className="p-4">
-          <img 
-            src="/lovable-uploads/77ac6086-d65e-4a8a-bb37-988e5f194efc.png" 
-            alt="Logo" 
-            className="h-8 w-auto"
-          />
+          <h2 className="text-xl font-bold text-primary">{storeName}</h2>
         </div>
         <SidebarGroup>
           <SidebarGroupContent>
