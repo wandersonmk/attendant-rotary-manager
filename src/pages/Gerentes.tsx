@@ -22,13 +22,6 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -36,7 +29,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 const formSchema = z.object({
   nome: z.string().min(2, "Nome deve ter pelo menos 2 caracteres"),
   email: z.string().email("Email inválido"),
-  loja_id: z.number().optional(),
+  senha: z.string().min(6, "A senha deve ter pelo menos 6 caracteres"),
   tipo: z.literal("gerente"),
 })
 
@@ -59,6 +52,7 @@ const Gerentes = () => {
     defaultValues: {
       nome: "",
       email: "",
+      senha: "",
       tipo: "gerente",
     },
   })
@@ -79,9 +73,10 @@ const Gerentes = () => {
 
   const createManager = useMutation({
     mutationFn: async (values: z.infer<typeof formSchema>) => {
+      // Primeiro, cria o usuário no auth
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: values.email,
-        password: "senha123", // Temporary password
+        password: values.senha,
         options: {
           data: {
             role: "manager",
@@ -91,11 +86,12 @@ const Gerentes = () => {
 
       if (authError) throw authError
 
+      // Depois, insere os dados na tabela usuarios
       const { error } = await supabase.from("usuarios").insert([
         {
           nome: values.nome,
           email: values.email,
-          senha: "senha123", // This should be hashed in production
+          senha: values.senha,
           tipo: "gerente",
           user_id: authData.user?.id,
         },
@@ -112,11 +108,11 @@ const Gerentes = () => {
       setIsOpen(false)
       form.reset()
     },
-    onError: () => {
+    onError: (error) => {
       toast({
         variant: "destructive",
         title: "Erro ao criar gerente",
-        description: "Tente novamente mais tarde.",
+        description: error.message || "Tente novamente mais tarde.",
       })
     },
   })
@@ -208,6 +204,19 @@ const Gerentes = () => {
                             <FormLabel>Email</FormLabel>
                             <FormControl>
                               <Input type="email" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="senha"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Senha Provisória</FormLabel>
+                            <FormControl>
+                              <Input type="password" {...field} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
