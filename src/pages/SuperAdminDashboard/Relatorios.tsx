@@ -35,11 +35,21 @@ const Relatorios = () => {
 
   useEffect(() => {
     const fetchLojas = async () => {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('lojas')
         .select('id, nome')
         .neq('nome', 'Administrador')
         .order('nome');
+      
+      if (error) {
+        console.error('Error fetching lojas:', error);
+        toast({
+          title: "Erro ao carregar lojas",
+          description: "Não foi possível carregar a lista de lojas.",
+          variant: "destructive",
+        });
+        return;
+      }
       
       if (data) {
         setLojas(data);
