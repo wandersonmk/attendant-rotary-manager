@@ -60,33 +60,38 @@ export function DashboardSidebar() {
   const navigate = useNavigate()
   const { toast } = useToast()
   const [storeName, setStoreName] = useState("")
+  const [userName, setUserName] = useState("")
 
   useEffect(() => {
-    const fetchStoreInfo = async () => {
+    const fetchUserInfo = async () => {
       const { data: { user } } = await supabase.auth.getUser()
       
       if (user) {
         const { data: userData } = await supabase
           .from('usuarios')
-          .select('loja_id')
+          .select('nome, loja_id')
           .eq('user_id', user.id)
           .single()
 
-        if (userData?.loja_id) {
-          const { data: storeData } = await supabase
-            .from('lojas')
-            .select('nome')
-            .eq('id', userData.loja_id)
-            .single()
+        if (userData) {
+          setUserName(userData.nome)
+          
+          if (userData.loja_id) {
+            const { data: storeData } = await supabase
+              .from('lojas')
+              .select('nome')
+              .eq('id', userData.loja_id)
+              .single()
 
-          if (storeData) {
-            setStoreName(storeData.nome)
+            if (storeData) {
+              setStoreName(storeData.nome)
+            }
           }
         }
       }
     }
 
-    fetchStoreInfo()
+    fetchUserInfo()
   }, [])
 
   const handleLogout = async () => {
@@ -143,9 +148,9 @@ export function DashboardSidebar() {
         <div className="flex items-center justify-between">
           <button className="flex items-center space-x-2 text-sm font-medium">
             <span className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center">
-              JS
+              {userName ? userName.charAt(0).toUpperCase() : "U"}
             </span>
-            <span>João Silva</span>
+            <span>{userName || "Usuário"}</span>
           </button>
           <button 
             onClick={handleLogout}
