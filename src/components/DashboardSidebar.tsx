@@ -17,9 +17,10 @@ import {
   SidebarMenuItem,
   SidebarFooter,
 } from "@/components/ui/sidebar"
-import { Link, useLocation } from "react-router-dom"
+import { Link, useLocation, useNavigate } from "react-router-dom"
 import { useEffect, useState } from "react"
 import { supabase } from "@/integrations/supabase/client"
+import { useToast } from "@/hooks/use-toast"
 
 const primaryMenuItems = [
   {
@@ -56,6 +57,8 @@ const primaryMenuItems = [
 
 export function DashboardSidebar() {
   const location = useLocation()
+  const navigate = useNavigate()
+  const { toast } = useToast()
   const [storeName, setStoreName] = useState("")
 
   useEffect(() => {
@@ -85,6 +88,23 @@ export function DashboardSidebar() {
 
     fetchStoreInfo()
   }, [])
+
+  const handleLogout = async () => {
+    try {
+      await supabase.auth.signOut()
+      toast({
+        title: "Logout realizado com sucesso",
+        description: "Até logo!",
+      })
+      navigate('/')
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Erro ao fazer logout",
+        description: "Por favor, tente novamente.",
+      })
+    }
+  }
 
   return (
     <Sidebar>
@@ -127,7 +147,10 @@ export function DashboardSidebar() {
             </span>
             <span>João Silva</span>
           </button>
-          <button className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
+          <button 
+            onClick={handleLogout}
+            className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+          >
             <LogOut className="h-5 w-5" />
           </button>
         </div>
